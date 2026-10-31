@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(title)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">Blood Donor Network</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" th:href="@{/favicon.svg}">
+    <link rel="alternate icon" th:href="@{/favicon.ico}">
+    
+    <!-- Design System Stylesheet -->
+    <link rel="stylesheet" th:href="@{/css/hospital-saas.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    
+    <!-- Local Offline Vendor Assets -->
+    <script th:src="@{/vendor/lucide.min.js}"></script>
+    <script th:src="@{/vendor/chart.umd.min.js}"></script>
+</head>
+<body>
+
+    <!-- Top Navigation Bar -->
+    <header class="navbar" th:fragment="navbar">
+        <div class="nav-container">
+            <a th:href="@{/}" class="brand" aria-label="Blood Donor Network home">
+                <div class="brand-icon">
+                    <i data-lucide="droplet"></i>
+                </div>
+                <div class="brand-text">BloodDonor<span>Network</span></div>
+            </a>
+
+            <button class="nav-toggle" type="button" aria-label="Toggle menu" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <nav class="nav-panel" aria-label="Main navigation">
+                <ul class="nav-links">
+                    <li><a th:href="@{/}" class="nav-link">Home</a></li>
+                    <li><a th:href="@{/#about}" class="nav-link">About</a></li>
+                    <li><a th:href="@{/#how-it-works}" class="nav-link">How It Works</a></li>
+                    <li><a th:href="@{/#constraints}" class="nav-link">Clinical Constraints</a></li>
+                    <li><a th:href="@{/login}" class="nav-link">Login</a></li>
+                    <li>
+                        <a th:href="@{/register}" class="btn btn-primary btn-nav">
+                            <i data-lucide="user-plus" style="width: 15px; height: 15px;"></i>
+                            <span>Become a Donor</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Authenticated Dashboard Navigation Bar -->
+    <header class="navbar" th:fragment="dashNavbar(username, role)">
+        <div class="nav-container">
+            <a th:href="@{/}" class="brand">
+                <div class="brand-icon">
+                    <i data-lucide="droplet"></i>
+                </div>
+                <div class="brand-text">BloodDonor<span>Network</span></div>
+            </a>
+            
+            <div style="display: flex; align-items: center; gap: 0.85rem;">
+                <span style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.75rem; background: var(--slate-light); border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 0.85rem; font-weight: 600; color: var(--navy-dark);">
+                    <span style="color: var(--success); font-size: 0.75rem;">●</span>
+                    <span th:text="${username}">User</span>
+                    <span style="color: var(--slate-muted); font-size: 0.75rem;" th:text="'(' + ${role} + ')'">(ROLE)</span>
+                </span>
+                <a th:href="@{/logout}" class="btn btn-secondary btn-sm">
+                    <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
+                    <span>Sign Out</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Standard Footer -->
+    <footer class="footer" th:fragment="footer">
+        <div class="footer-inner">
+            <div>
+                <div class="brand brand-footer">
+                    <div class="brand-icon">
+                        <i data-lucide="droplet"></i>
+                    </div>
+                    <div class="brand-text">BloodDonor<span>Network</span></div>
+                </div>
+                <p class="footer-copy">&copy; <span th:text="${#temporals.format(#temporals.createNow(), 'yyyy')}">2026</span> Blood Donor Network. Clinical blood coordination for donors, hospitals and administrators.</p>
+            </div>
+            <div class="footer-links">
+                <a th:href="@{/privacy}">Privacy Policy</a>
+                <a th:href="@{/terms}">Terms of Service</a>
+                <a th:href="@{/login}">Portal Access</a>
+                <a th:href="@{/}">Home</a>
+            </div>
+        </div>
+        <p class="footer-meta">
+            Java 17, Spring Boot 3, Spring MVC, Thymeleaf, MySQL 8, JDBC, Chart.js
+        </p>
+    </footer>
+
+    <!-- Scripts Fragment -->
+    <div th:fragment="scripts">
+        <script th:src="@{/js/main.js}"></script>
+        <script th:src="@{/js/dashboard.js}"></script>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${pageTitle})}"></head>
+<body>
+
+    <!-- Header Navigation -->
+    <header th:replace="~{fragments/layout :: navbar}"></header>
+
+    <main class="section">
+        <div style="max-width: 800px; margin: 0 auto; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 2.5rem; box-shadow: var(--shadow-sm);">
+            <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 1.25rem; margin-bottom: 1.5rem;">
+                <span class="section-tag">Legal and Data Governance</span>
+                <h1 style="font-size: 2rem; font-weight: 800; color: var(--navy-dark); letter-spacing: -0.02em;">
+                    Privacy Policy
+                </h1>
+                <p style="color: var(--slate-muted); font-size: 0.9rem; margin-top: 0.25rem;">
+                    Notice: This document outlines the clinical data collected and processed by the Blood Donor Network platform. It requires review by the responsible deployment authority.
+                </p>
+            </div>
+
+            <div style="font-size: 0.95rem; color: var(--slate-body); line-height: 1.7; display: flex; flex-direction: column; gap: 1.5rem;">
+                <section>
+                    <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--navy-dark); margin-bottom: 0.5rem;">
+                        1. Information We Store
+                    </h2>
+                    <p>
+                        The platform stores records necessary to operate clinical blood management and matching. This includes:
+                    </p>
+                    <ul style="padding-left: 1.5rem; margin-top: 0.5rem;">
+                        <li><strong>Voluntary Donors:</strong> Full name, age, blood group, contact telephone number, city location, availability status, and last donation timestamp.</li>
+                        <li><strong>Healthcare Facilities:</strong> Hospital name, city location, contact telephone number, and authorized user credentials.</li>
+                        <li><strong>Blood Demands:</strong> Patient reference name, blood group, units requested, clinical urgency classification, and status.</li>
+                        <li><strong>Donation Records:</strong> Date of collection, participating hospital, donor reference, and whole blood units contributed.</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--navy-dark); margin-bottom: 0.5rem;">
+                        2. How Data is Used
+                    </h2>
+                    <p>
+                        Data is processed strictly for:
+                    </p>
+                    <ul style="padding-left: 1.5rem; margin-top: 0.5rem;">
+                        <li>Enforcing the mandatory 90-day clinical recovery period between donations.</li>
+                        <li>Determining ABO and Rh blood group transfusion compatibility.</li>
+                        <li>Allowing authorized medical staff to notify compatible voluntary donors in their city.</li>
+                        <li>Maintaining ACID-compliant audit logs of inventory deductions.</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--navy-dark); margin-bottom: 0.5rem;">
+                        3. Multi-Tenant Access Isolation
+                    </h2>
+                    <p>
+                        Hospital staff can only inspect, raise, and manage blood demands belonging strictly to their authorized healthcare institution. Patient names and contact details are never exposed to public visitors.
+                    </p>
+                </section>
+
+                <section>
+                    <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--navy-dark); margin-bottom: 0.5rem;">
+                        4. Security and Storage
+                    </h2>
+                    <p>
+                        Account passwords are encrypted with BCrypt cryptographic hashing. Sensitive dashboards send no-store HTTP cache headers and all state-modifying requests are validated with session-bound CSRF tokens.
+                    </p>
+                </section>
+            </div>
+
+            <div style="margin-top: 2.5rem; border-top: 1px solid var(--border-color); padding-top: 1.25rem; display: flex; justify-content: space-between; align-items: center;">
+                <a th:href="@{/}" class="btn btn-secondary btn-sm">
+                    <i data-lucide="arrow-left" style="width: 14px; height: 14px;"></i>
+                    <span>Back to Overview</span>
+                </a>
+                <span style="font-size: 0.8rem; color: var(--slate-muted);">Version 1.0.0 (October 2026)</span>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+
+    <!-- Scripts -->
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+
+</body>
+</html>

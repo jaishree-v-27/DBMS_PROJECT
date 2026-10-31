@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${pageTitle})}"></head>
+<body>
+
+    <!-- Top Navigation Bar -->
+    <header th:replace="~{fragments/layout :: navbar}"></header>
+
+    <main class="auth-wrapper">
+        <div class="auth-card auth-card-register">
+            <!-- Icon and Heading -->
+            <div class="auth-header">
+                <div class="auth-icon">
+                    <i data-lucide="user-plus" style="width: 22px; height: 22px;"></i>
+                </div>
+                <h1 class="auth-title">Become a Voluntary Donor</h1>
+                <p class="auth-subtitle">Register your donor profile to receive life-saving transfusion alerts in your city</p>
+            </div>
+
+            <!-- Error Banner -->
+            <div th:if="${errorMessage}" class="alert alert-danger">
+                <i data-lucide="alert-circle" style="width: 16px; height: 16px; flex-shrink: 0;"></i>
+                <span th:text="${errorMessage}">Registration validation error.</span>
+            </div>
+
+            <!-- Registration Form with CSRF Token -->
+            <form th:action="@{/register}" method="post" id="registerForm" class="register-grid-form">
+                <input type="hidden" name="_csrf" th:value="${_csrf}">
+
+                <div class="form-row-2col">
+                    <!-- Username -->
+                    <div class="form-group">
+                        <label class="form-label" for="username">Username</label>
+                        <input type="text" id="username" name="username" class="form-input" th:value="${username}" placeholder="e.g. rahul_sharma" required autofocus>
+                    </div>
+
+                    <!-- Full Name -->
+                    <div class="form-group">
+                        <label class="form-label" for="name">Full Name</label>
+                        <input type="text" id="name" name="name" class="form-input" th:value="${name}" placeholder="e.g. Rahul Sharma" required>
+                    </div>
+                </div>
+
+                <div class="form-row-2col">
+                    <!-- Password -->
+                    <div class="form-group">
+                        <label class="form-label" for="password">Password (min 6 chars)</label>
+                        <input type="password" id="password" name="password" class="form-input" placeholder="Create password" required>
+                    </div>
+
+                    <!-- Confirm Password -->
+                    <div class="form-group">
+                        <label class="form-label" for="confirmPassword">Confirm Password</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" class="form-input" placeholder="Re-enter password" required>
+                    </div>
+                </div>
+
+                <div class="form-row-2col">
+                    <!-- Blood Group -->
+                    <div class="form-group">
+                        <label class="form-label" for="bloodGroup">Blood Group</label>
+                        <select id="bloodGroup" name="bloodGroup" class="form-select" required>
+                            <option value="">Select Group</option>
+                            <option value="A+" th:selected="${bloodGroup == 'A+'}">A+ (A Positive)</option>
+                            <option value="A-" th:selected="${bloodGroup == 'A-'}">A- (A Negative)</option>
+                            <option value="B+" th:selected="${bloodGroup == 'B+'}">B+ (B Positive)</option>
+                            <option value="B-" th:selected="${bloodGroup == 'B-'}">B- (B Negative)</option>
+                            <option value="AB+" th:selected="${bloodGroup == 'AB+'}">AB+ (AB Positive)</option>
+                            <option value="AB-" th:selected="${bloodGroup == 'AB-'}">AB- (AB Negative)</option>
+                            <option value="O+" th:selected="${bloodGroup == 'O+'}">O+ (O Positive)</option>
+                            <option value="O-" th:selected="${bloodGroup == 'O-'}">O- (O Negative)</option>
+                        </select>
+                    </div>
+
+                    <!-- Gender -->
+                    <div class="form-group">
+                        <label class="form-label" for="gender">Gender</label>
+                        <select id="gender" name="gender" class="form-select" required>
+                            <option value="">Select Gender</option>
+                            <option value="M" th:selected="${gender == 'M'}">Male</option>
+                            <option value="F" th:selected="${gender == 'F'}">Female</option>
+                            <option value="O" th:selected="${gender == 'O'}">Other / Prefer not to say</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row-2col">
+                    <!-- Age -->
+                    <div class="form-group">
+                        <label class="form-label" for="age">Age (18 to 65)</label>
+                        <input type="number" id="age" name="age" class="form-input" min="18" max="65" th:value="${age}" placeholder="e.g. 25" required>
+                    </div>
+
+                    <!-- Contact Phone -->
+                    <div class="form-group">
+                        <label class="form-label" for="phone">Phone (10 digits)</label>
+                        <input type="tel" id="phone" name="phone" class="form-input" maxlength="10" th:value="${phone}" placeholder="e.g. 9876543210" required>
+                    </div>
+                </div>
+
+                <!-- City Location (Full Width) -->
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label class="form-label" for="city">City of Residence</label>
+                    <input type="text" id="city" name="city" class="form-input" th:value="${city}" placeholder="e.g. Chennai, Coimbatore, Madurai" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block" style="width: 100%; padding: 0.75rem;">
+                    <i data-lucide="check" style="width: 16px; height: 16px;"></i>
+                    <span>Complete Donor Registration</span>
+                </button>
+            </form>
+
+            <!-- Footer Navigation Link -->
+            <div style="text-align: center; margin-top: 1rem; font-size: 0.85rem; color: var(--text-muted);">
+                <span>Already have an account? </span>
+                <a th:href="@{/login}" style="font-weight: 700; color: var(--red);">Sign In to Portal</a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+
+    <!-- Scripts -->
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+
+</body>
+</html>

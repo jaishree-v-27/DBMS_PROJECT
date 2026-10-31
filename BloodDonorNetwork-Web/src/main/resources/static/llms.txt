@@ -1,0 +1,16 @@
+# Blood Donor Network
+> Clinical Transfusion and Voluntary Blood Donor Management System
+
+## Platform Overview
+Blood Donor Network is an open-source clinical healthcare management platform built with Java 17, Spring Boot 3, Thymeleaf, and MySQL 8. It connects voluntary blood donors with regional hospitals to fulfill patient transfusion demands safely, accurately, and without inventory drift.
+
+## Clinical Safety Principles
+- 90-Day Recovery Rule: Voluntary whole blood donors must observe a minimum 90-day recovery interval between donations to allow full erythrocyte restitution.
+- Hemolytic Transfusion Compatibility: Red blood cell allocations adhere to strict ABO and Rh antigen compatibility tables to prevent acute hemolytic reactions. Universal donor O- is conserved for emergency and type-matched needs.
+- Automated MySQL Database Triggers: Donation sessions automatically credit hospital inventory and update donor recovery dates within the database layer.
+- ACID Transactional Issuance: Fulfillments execute with database row-level locking (SELECT ... FOR UPDATE) to guarantee zero negative stock and eliminate concurrency conflicts.
+
+## Protected Portals
+- Administrator Console (/admin/dashboard): System telemetry, stock monitoring, voluntary donor registry, and audit logging.
+- Hospital Portal (/hospital/dashboard): Facility stock, demand tracking, strategy donor matching, and in-app notifications.
+- Donor Portal (/donor/dashboard): 90-day recovery countdown, profile settings, milestone achievements, and transfusion notification inbox.

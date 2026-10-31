@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${pageTitle})}"></head>
+<body>
+
+    <div class="dash-app">
+        <!-- Mobile Sidebar Backdrop Overlay -->
+        <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+        <!-- Master Unified Sidebar -->
+        <aside class="dash-sidebar" id="dashSidebar">
+            <!-- Sidebar Header -->
+            <div class="sidebar-header">
+                <a th:href="@{/}" class="sidebar-brand">
+                    <div class="brand-icon">
+                        <i data-lucide="droplet"></i>
+                    </div>
+                    <div class="brand-text">BloodDonor<span>Network</span></div>
+                </a>
+                <button type="button" class="sidebar-close-btn" id="sidebarCloseBtn" aria-label="Close sidebar">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+
+            <!-- Role Indicator Badge -->
+            <div class="sidebar-role-badge">
+                <span class="role-indicator">●</span>
+                <span class="role-title">Voluntary Donor</span>
+            </div>
+
+            <!-- Grouped Navigation Menu -->
+            <nav class="sidebar-nav" id="sidebarNav" aria-label="Donor Navigation">
+                <!-- Group 1: Overview -->
+                <div class="nav-group">
+                    <div class="nav-group-title">Overview</div>
+                    <ul class="nav-group-list">
+                        <li>
+                            <a href="#overview" class="nav-item active" data-target="panel-overview" aria-current="page">
+                                <i data-lucide="layout-dashboard"></i>
+                                <span>Overview</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Group 2: Volunteering -->
+                <div class="nav-group">
+                    <div class="nav-group-title">Volunteering</div>
+                    <ul class="nav-group-list">
+                        <li>
+                            <a href="#inbox" class="nav-item" data-target="panel-inbox">
+                                <i data-lucide="bell"></i>
+                                <span>Requests Near Me</span>
+                                <span class="nav-badge" th:classappend="${unreadAlertsCount > 0} ? 'danger' : ''" th:text="${unreadAlertsCount}">0</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#eligibility" class="nav-item" data-target="panel-eligibility">
+                                <i data-lucide="heart-pulse"></i>
+                                <span>Eligibility Tracker</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#history" class="nav-item" data-target="panel-history">
+                                <i data-lucide="history"></i>
+                                <span>Donation History</span>
+                                <span class="nav-badge" th:text="${totalDonations}">0</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#milestones" class="nav-item" data-target="panel-milestones">
+                                <i data-lucide="award"></i>
+                                <span>Milestone Badges</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Group 3: Account -->
+                <div class="nav-group">
+                    <div class="nav-group-title">Account</div>
+                    <ul class="nav-group-list">
+                        <li>
+                            <a href="#profile" class="nav-item" data-target="panel-profile">
+                                <i data-lucide="user"></i>
+                                <span>My Profile</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#settings" class="nav-item" data-target="panel-settings">
+                                <i data-lucide="settings"></i>
+                                <span>Security & Settings</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Sidebar Footer -->
+            <div class="sidebar-footer">
+                <div class="user-mini-card">
+                    <div class="user-avatar" th:text="${#strings.substring(donorName, 0, 1).toUpperCase()}">R</div>
+                    <div class="user-info">
+                        <div class="user-name" th:text="${donorName}">Rahul Sharma</div>
+                        <div class="user-role" th:text="${city}">Chennai</div>
+                    </div>
+                    <a th:href="@{/logout}" class="sidebar-logout-btn" title="Sign Out">
+                        <i data-lucide="log-out"></i>
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Workspace Area -->
+        <div class="dash-main-wrap">
+            <!-- Unified Topbar -->
+            <header th:replace="~{fragments/dashboard-layout :: dashTopbar('Voluntary Donor Portal', ${username}, ${role}, ${roleDisplayName}, ${unreadAlertsCount})}"></header>
+
+            <!-- Scrollable Content Area -->
+            <main class="dash-content-area" id="dashContentArea">
+                <!-- Status Alerts -->
+                <div th:replace="~{fragments/dashboard-layout :: dashAlerts}"></div>
+
+                <!-- ==============================================================
+                     PANEL 1: DONOR OVERVIEW
+                     ============================================================== -->
+                <div class="dash-panel active" id="panel-overview">
+                    <!-- Welcome Hero Card -->
+                    <div class="card" style="background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-color);">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+                            <div>
+                                <div style="display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.2rem 0.55rem; background: var(--white); border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 0.6rem;">
+                                    <i data-lucide="heart" style="width: 13px; height: 13px; color: var(--primary-red);"></i>
+                                    <span style="color: var(--primary-red);">Voluntary Donor Portal</span>
+                                </div>
+                                <h2 style="font-size: 1.85rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.35rem; color: var(--text-main); display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                                    <span>Welcome back, <span th:text="${donorName}">Rahul Sharma</span>!</span>
+                                    <span class="gender-badge" th:title="'Gender: ' + (${gender != null and !gender.isEmpty()} ? ${gender} : 'Unspecified')" style="display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: var(--radius-sm); background: var(--white); border: 1px solid var(--border-color);">
+                                        <!-- Male (M, m, male, Male, MALE) -->
+                                        <svg th:if="${gender != null and (gender.trim().equalsIgnoreCase('M') or gender.trim().equalsIgnoreCase('Male'))}"
+                                             style="width: 18px; height: 18px; color: var(--text-main);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-label="Male Donor" role="img">
+                                            <circle cx="10" cy="14" r="5"></circle><polyline points="15 5 20 5 20 10"></polyline><line x1="13.6" y1="10.4" x2="20" y2="5"></line>
+                                        </svg>
+                                        <!-- Female (F, f, female, Female, FEMALE) -->
+                                        <svg th:if="${gender != null and (gender.trim().equalsIgnoreCase('F') or gender.trim().equalsIgnoreCase('Female'))}"
+                                             style="width: 18px; height: 18px; color: var(--btn-red);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-label="Female Donor" role="img">
+                                            <circle cx="12" cy="9" r="5"></circle><line x1="12" y1="14" x2="12" y2="21"></line><line x1="9" y1="18" x2="15" y2="18"></line>
+                                        </svg>
+                                        <!-- Other / Unspecified / Missing -->
+                                        <svg th:if="${gender == null or (!gender.trim().equalsIgnoreCase('M') and !gender.trim().equalsIgnoreCase('Male') and !gender.trim().equalsIgnoreCase('F') and !gender.trim().equalsIgnoreCase('Female'))}"
+                                             style="width: 18px; height: 18px; color: var(--text-secondary);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-label="Volunteer Donor" role="img">
+                                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>
+                                        </svg>
+                                    </span>
+                                </h2>
+                                <p style="color: var(--text-secondary); font-size: 0.9rem; display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap; margin: 0;">
+                                    <span>Blood Group: <strong class="bg-badge" style="color: #fff; background: var(--btn-red); border: none;" th:text="${bloodGroup}">O+</strong></span>
+                                    <span>&bull;</span>
+                                    <span>City: <strong th:text="${city}">Chennai</strong></span>
+                                    <span>&bull;</span>
+                                    <span>Age: <strong th:text="${age} + ' yrs'">29 yrs</strong></span>
+                                    <span>&bull;</span>
+                                    <span>Donor ID: <strong th:text="'#' + ${donorId}">#1</strong></span>
+                                </p>
+                            </div>
+
+                            <div style="display: flex; gap: 0.75rem; align-items: center;">
+                                <a href="#inbox" class="btn btn-primary" onclick="switchPanel('panel-inbox', document.querySelector('[data-target=\'panel-inbox\']'))">
+                                    <i data-lucide="bell"></i>
+                                    <span>View Clinical Alerts</span>
+                                </a>
+                                <a th:if="${!isEligible and daysRemaining > 0}" th:href="@{/donor/reminder.ics}" class="btn btn-secondary btn-sm" title="Download iCalendar reminder">
+                                    <i data-lucide="calendar-plus"></i>
+                                    <span>Add to Calendar</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3 KPI Metric Cards -->
+                    <div class="stat-grid">
+                        <div class="stat-card">
+                            <div class="stat-top">
+                                <span class="stat-label">Verified Donations</span>
+                                <div class="stat-icon green"><i data-lucide="check-circle"></i></div>
+                            </div>
+                            <div class="stat-value" style="color: var(--success);" th:text="${totalDonations}">0</div>
+                            <div class="stat-hint" style="color: var(--success);">Recorded across partner hospitals</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-top">
+                                <span class="stat-label">Units Contributed</span>
+                                <div class="stat-icon red"><i data-lucide="droplet"></i></div>
+                            </div>
+                            <div class="stat-value" style="color: var(--primary);" th:text="${totalUnits}">0</div>
+                            <div class="stat-hint" style="color: var(--slate-muted);">Whole blood units credited</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-top">
+                                <span class="stat-label">Medical Eligibility</span>
+                                <div class="stat-icon" th:classappend="${isEligible} ? 'green' : 'amber'">
+                                    <i th:if="${isEligible}" data-lucide="heart-pulse"></i>
+                                    <i th:unless="${isEligible}" data-lucide="clock"></i>
+                                </div>
+                            </div>
+                            <div class="stat-value" style="font-size: 1.5rem;" th:styleappend="${isEligible} ? 'color: var(--success);' : 'color: var(--warning);'" th:text="${isEligible ? 'Eligible' : daysRemaining + 'd Recovery'}">Eligible</div>
+                            <div class="stat-hint" th:text="${isEligible ? 'Ready to donate today' : 'Next: ' + nextEligibleDate}">Next: Immediate</div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Eligibility Preview Card -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h3 class="card-title">90-Day Recovery Status</h3>
+                                <p class="card-subtitle">Enforcing medical intervals for red blood cell recovery</p>
+                            </div>
+                            <a href="#eligibility" class="btn btn-secondary btn-sm" onclick="switchPanel('panel-eligibility', document.querySelector('[data-target=\'panel-eligibility\']'))">
+                                <span>Details</span>
+                                <i data-lucide="arrow-right"></i>
+                            </a>
+                        </div>
+
+                        <div style="padding: 0.5rem 0;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem;">
+                                <span th:text="${eligibilityReason}">Clinical status note.</span>
+                                <span><strong th:text="${daysPassed}">45</strong> / 90 Days Elapsed</span>
+                            </div>
+                            <div style="width: 100%; height: 10px; background: var(--slate-light); border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border-color);">
+                                <div th:style="'width: ' + ${recoveryPercent} + '%; height: 100%; background: ' + (${isEligible} ? 'var(--primary-red)' : 'var(--btn-red)') + '; transition: width 0.5s ease;'"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==============================================================
+                     PANEL 2: CLINICAL ALERTS INBOX
+                     ============================================================== -->
+                <div class="dash-panel" id="panel-inbox">
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h2 class="card-title">Requests Near Me (Clinical Notifications Inbox)</h2>
+                                <p class="card-subtitle">Urgent transfusion alerts dispatched by authorized healthcare facilities in <span th:text="${city}">City</span></p>
+                            </div>
+                            <span class="badge badge-normal" th:text="${#lists.size(notifications)} + ' Total Alerts'">0 Alerts</span>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Hospital Facility</th>
+                                        <th>City Location</th>
+                                        <th>Patient Reference</th>
+                                        <th>Group Needed</th>
+                                        <th>Units</th>
+                                        <th>Urgency</th>
+                                        <th>Notification Status</th>
+                                        <th>Your Response</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="n : ${notifications}">
+                                        <td style="font-weight: 700; color: var(--navy-dark);" th:text="${n.hospitalName}">Apollo Speciality Hospital</td>
+                                        <td th:text="${n.hospitalCity}">Chennai</td>
+                                        <td th:text="${n.patientName}">Priya Sundaram</td>
+                                        <td><span class="bg-badge" th:text="${n.bloodGroup}">O-</span></td>
+                                        <td style="font-weight: 700;" th:text="${n.unitsNeeded} + 'u'">2u</td>
+                                        <td>
+                                            <span th:if="${n.urgency == 'CRITICAL'}" class="badge badge-critical">CRITICAL</span>
+                                            <span th:if="${n.urgency == 'HIGH'}" class="badge badge-high">HIGH</span>
+                                            <span th:if="${n.urgency == 'NORMAL'}" class="badge badge-normal">NORMAL</span>
+                                        </td>
+                                        <td>
+                                            <span th:if="${n.status == 'SENT'}" class="badge badge-pending">ACTION REQUIRED</span>
+                                            <span th:if="${n.status == 'ACCEPTED'}" class="badge badge-fulfilled">ACCEPTED</span>
+                                            <span th:if="${n.status == 'DECLINED'}" class="badge badge-cancelled">DECLINED</span>
+                                            <span th:if="${n.status == 'EXPIRED'}" class="badge badge-cancelled">EXPIRED</span>
+                                        </td>
+                                        <td>
+                                            <div th:if="${n.status == 'SENT'}" style="display: flex; gap: 0.35rem;">
+                                                <form th:action="@{/donor/notification/respond}" method="post" style="display: inline;">
+                                                    <input type="hidden" name="_csrf" th:value="${_csrf}">
+                                                    <input type="hidden" name="notificationId" th:value="${n.notificationId}">
+                                                    <input type="hidden" name="status" value="ACCEPTED">
+                                                    <button type="submit" class="btn btn-primary btn-sm">Accept</button>
+                                                </form>
+                                                <form th:action="@{/donor/notification/respond}" method="post" style="display: inline;">
+                                                    <input type="hidden" name="_csrf" th:value="${_csrf}">
+                                                    <input type="hidden" name="notificationId" th:value="${n.notificationId}">
+                                                    <input type="hidden" name="status" value="DECLINED">
+                                                    <button type="submit" class="btn btn-secondary btn-sm">Decline</button>
+                                                </form>
+                                            </div>
+                                            <span th:unless="${n.status == 'SENT'}" style="font-size: 0.8rem; color: var(--slate-muted);">
+                                                Responded
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${#lists.isEmpty(notifications)}">
+                                        <td colspan="8" style="text-align: center; color: var(--slate-muted); padding: 2rem;">
+                                            No pending notifications in your inbox at this time.
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==============================================================
+                     PANEL 3: ELIGIBILITY & RECOVERY
+                     ============================================================== -->
+                <div class="dash-panel" id="panel-eligibility">
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h2 class="card-title">Clinical Eligibility & Recovery Evaluation</h2>
+                                <p class="card-subtitle">90-day clinical interval verification based on database donation records</p>
+                            </div>
+                            <span th:if="${isEligible}" class="badge badge-eligible">Eligible Today</span>
+                            <span th:unless="${isEligible}" class="badge badge-recovery">In Recovery</span>
+                        </div>
+
+                        <div style="background: var(--slate-light); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.5rem; margin-bottom: 1.5rem;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                    <div th:if="${isEligible}" style="width: 48px; height: 48px; border-radius: var(--radius-sm); background: var(--success-bg); color: var(--success); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                        <i data-lucide="check-circle" style="width: 26px; height: 26px;"></i>
+                                    </div>
+                                    <div th:unless="${isEligible}" style="width: 48px; height: 48px; border-radius: var(--radius-sm); background: var(--warning-bg); color: var(--warning); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                        <i data-lucide="clock" style="width: 26px; height: 26px;"></i>
+                                    </div>
+                                    <div>
+                                        <h3 th:if="${isEligible}" style="font-size: 1.3rem; font-weight: 800; color: var(--success); margin: 0;">
+                                            Clinically Eligible to Donate Blood Today
+                                        </h3>
+                                        <h3 th:unless="${isEligible}" style="font-size: 1.3rem; font-weight: 800; color: var(--warning); margin: 0;">
+                                            90-Day Recovery Active (<span th:text="${daysRemaining}">45</span> Days Remaining)
+                                        </h3>
+                                        <p style="font-size: 0.85rem; color: var(--slate-body); margin-top: 0.2rem;" th:text="${eligibilityReason}">
+                                            Eligibility note.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div style="text-align: right; background: #ffffff; padding: 0.75rem 1.25rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                                    <div style="font-size: 0.72rem; font-weight: 700; color: var(--slate-muted); text-transform: uppercase;">Next Eligible Date</div>
+                                    <div style="font-size: 1.2rem; font-weight: 800; color: var(--navy-dark);" th:text="${nextEligibleDate}">Immediate</div>
+                                    <div style="font-size: 0.72rem; color: var(--slate-muted); margin-top: 0.15rem;">Last donated: <strong th:text="${lastDonationDate}">2026-01-15</strong></div>
+                                </div>
+                            </div>
+
+                            <!-- Progress Bar -->
+                            <div th:if="${!isEligible and daysRemaining > 0}" style="margin-top: 1.25rem;">
+                                <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 600; color: var(--slate-muted); margin-bottom: 0.35rem;">
+                                    <span>Hematopoiesis Recovery Progress</span>
+                                    <span><span th:text="${daysPassed}">45</span> / 90 Days (<span th:text="${recoveryPercent}">50</span>%)</span>
+                                </div>
+                                <div style="width: 100%; height: 10px; background: #ffffff; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border-color);">
+                                    <div th:style="'width: ' + ${recoveryPercent} + '%; height: 100%; background: var(--primary-red); transition: width 0.5s ease;'"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Calendar Export Option -->
+                        <div th:if="${!isEligible and daysRemaining > 0}" style="display: flex; justify-content: flex-end;">
+                            <a th:href="@{/donor/reminder.ics}" class="btn btn-secondary">
+                                <i data-lucide="calendar-plus"></i>
+                                <span>Download iCalendar (.ics) Reminder</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==============================================================
+                     PANEL 4: DONATION HISTORY
+                     ============================================================== -->
+                <div class="dash-panel" id="panel-history">
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h2 class="card-title">Verified Donation History</h2>
+                                <p class="card-subtitle">Sessions recorded in hospital blood banks and verified in MySQL</p>
+                            </div>
+                            <span class="badge badge-normal" th:text="${totalDonations} + ' Sessions'">0 Sessions</span>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Hospital Facility</th>
+                                        <th>Units Contributed</th>
+                                        <th>Blood Group</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="h : ${donations}">
+                                        <td style="font-weight: 700; color: var(--navy-dark);" th:text="${h.donation_date}">2026-03-01</td>
+                                        <td th:text="${h.hospital_name}">Apollo Speciality Hospital</td>
+                                        <td style="font-weight: 700;" th:text="${h.units} + ' unit'">1 unit</td>
+                                        <td><span class="bg-badge" th:text="${h.blood_group}">O+</span></td>
+                                        <td><span class="badge badge-fulfilled">Audited & Credited</span></td>
+                                    </tr>
+                                    <tr th:if="${#lists.isEmpty(donations)}">
+                                        <td colspan="5" style="text-align: center; color: var(--slate-muted); padding: 2rem;">
+                                            No verified donations recorded in the database yet.
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==============================================================
+                     PANEL 5: MILESTONE ACHIEVEMENTS
+                     ============================================================== -->
+                <div class="dash-panel" id="panel-milestones">
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h2 class="card-title">Verified Milestone Badges</h2>
+                                <p class="card-subtitle">Ethical recognition calculated strictly from verified database donation records</p>
+                            </div>
+                            <span class="badge badge-fulfilled">Audited</span>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
+                            <div th:each="b : ${badges}" class="card" 
+                                 th:style="${b.isEarned ? 'border: 1px solid var(--border-color); background: #ffffff;' : 'opacity: 0.75; background: var(--bg-card); border: 1px solid var(--border-color);'}" style="margin-bottom: 0;">
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                                    <span style="font-weight: 700; font-size: 1.05rem; color: var(--navy-dark);" th:text="${b.title}">First Drop</span>
+                                    <span th:if="${b.isEarned}" class="badge badge-fulfilled">Earned</span>
+                                    <span th:unless="${b.isEarned}" class="badge badge-cancelled">Locked</span>
+                                </div>
+                                <p style="font-size: 0.825rem; color: var(--slate-muted); margin-bottom: 0.75rem;" th:text="${b.description}">
+                                    First verified whole blood donation.
+                                </p>
+                                
+                                <div>
+                                    <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--slate-muted); margin-bottom: 0.25rem;">
+                                        <span>Progress</span>
+                                        <span><span th:text="${b.currentProgress}">1</span> / <span th:text="${b.threshold}">5</span> Donations</span>
+                                    </div>
+                                    <div style="width: 100%; height: 6px; background: var(--border-color); border-radius: var(--radius-sm); overflow: hidden;">
+                                        <div th:style="'width: ' + ${b.progressPercent} + '%; height: 100%; background: ' + (${b.isEarned} ? 'var(--primary-red)' : 'var(--btn-red)') + ';'"></div>
+                                    </div>
+                                </div>
+
+                                <div th:if="${b.isEarned}" style="font-size: 0.72rem; color: var(--success); font-weight: 600; margin-top: 0.5rem;">
+                                    Earned: <span th:text="${#temporals.format(b.earnedAt, 'yyyy-MM-dd')}">2026-03-01</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==============================================================
+                     PANEL 6: MY PROFILE
+                     ============================================================== -->
+                <div class="dash-panel" id="panel-profile">
+                    <div class="card" style="max-width: 680px; margin: 0 auto;">
+                        <div class="card-header">
+                            <div>
+                                <h2 class="card-title">My Voluntary Donor Profile</h2>
+                                <p class="card-subtitle">Keep contact phone number and availability settings updated</p>
+                            </div>
+                            <span class="badge badge-normal" th:text="'Completeness: ' + ${profileCompleteness} + '%'">100%</span>
+                        </div>
+
+                        <form th:action="@{/donor/profile/update}" method="post">
+                            <input type="hidden" name="_csrf" th:value="${_csrf}">
+
+                            <div class="form-group">
+                                <label class="form-label" for="donorNameInput">Full Legal Name</label>
+                                <input type="text" id="donorNameInput" name="name" class="form-input" th:value="${donorName}" required>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div class="form-group">
+                                    <label class="form-label">Blood Group (Read-Only)</label>
+                                    <input type="text" class="form-input" th:value="${bloodGroup}" disabled style="background-color: var(--slate-light); font-weight: 700; color: var(--primary);">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="ageInput">Age (18 to 65 yrs)</label>
+                                    <input type="number" id="ageInput" name="age" class="form-input" th:value="${age}" min="18" max="65" disabled style="background-color: var(--slate-light);">
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div class="form-group">
+                                    <label class="form-label" for="phoneInput">Contact Telephone</label>
+                                    <input type="tel" id="phoneInput" name="phone" class="form-input" th:value="${phone}" placeholder="10-digit number" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="cityInput">City Location</label>
+                                    <input type="text" id="cityInput" name="city" class="form-input" th:value="${city}" required>
+                                </div>
+                            </div>
+
+                            <div class="form-group" style="background: var(--slate-light); padding: 0.85rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.5rem;">
+                                <input type="checkbox" id="availableCheck" name="available" value="true" th:checked="${available}" style="width: 16px; height: 16px; accent-color: var(--primary);">
+                                <label for="availableCheck" style="font-size: 0.85rem; font-weight: 600; color: var(--navy-dark); cursor: pointer; user-select: none;">
+                                    I am active and available to receive transfusion notifications from local hospitals.
+                                </label>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-block btn-lg">
+                                <i data-lucide="save"></i>
+                                <span>Save Profile Updates</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- ==============================================================
+                     PANEL 7: ACCOUNT & SECURITY SETTINGS
+                     ============================================================== -->
+                <div th:replace="~{fragments/dashboard-layout :: settingsPanel(${username}, ${role}, ${roleDisplayName})}"></div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Scripts Fragment -->
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+
+</body>
+</html>

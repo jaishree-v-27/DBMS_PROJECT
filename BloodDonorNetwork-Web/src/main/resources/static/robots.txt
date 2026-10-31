@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+Allow: /login
+Allow: /privacy
+Allow: /terms
+Disallow: /admin/
+Disallow: /hospital/
+Disallow: /donor/
+Disallow: /request/
+Disallow: /api/
+Disallow: /export/
+
+Sitemap: /sitemap.xml

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+    <!-- Unified Dashboard Topbar Fragment -->
+    <header class="dash-topbar" th:fragment="dashTopbar(title, username, role, roleDisplayName, unreadAlertsCount)">
+        <div class="topbar-left">
+            <button type="button" class="sidebar-toggle-btn" id="sidebarToggleBtn" aria-label="Open sidebar" aria-expanded="false">
+                <i data-lucide="menu"></i>
+            </button>
+            <div class="topbar-breadcrumb">
+                <span class="breadcrumb-root">Portal</span>
+                <span class="breadcrumb-separator">/</span>
+                <h1 class="topbar-title" id="pageTitleDisplay" th:text="${title}">Overview</h1>
+            </div>
+        </div>
+
+        <!-- Live Table / Panel Search Bar -->
+        <div class="topbar-search">
+            <i data-lucide="search"></i>
+            <input type="text" id="globalPanelSearch" placeholder="Search in active view..." autocomplete="off">
+            <span class="search-kbd-shortcut">Ctrl+K</span>
+        </div>
+
+        <div class="topbar-actions">
+            <!-- Notifications Bell Dropdown -->
+            <div class="topbar-dropdown" id="notifDropdownWrap">
+                <button type="button" class="topbar-icon-btn" id="notifBtn" aria-label="Notifications" aria-expanded="false">
+                    <i data-lucide="bell"></i>
+                    <span class="badge-dot" th:if="${unreadAlertsCount != null and unreadAlertsCount > 0}"></span>
+                </button>
+                <div class="dropdown-menu dropdown-notif" id="notifMenu">
+                    <div class="dropdown-header">
+                        <span>Notifications</span>
+                        <span class="badge badge-normal" th:text="${unreadAlertsCount != null ? unreadAlertsCount : 0} + ' active'">0 active</span>
+                    </div>
+                    <div style="padding: 0.85rem 1rem; font-size: 0.85rem; color: var(--slate-body);">
+                        <div th:if="${unreadAlertsCount != null and unreadAlertsCount > 0}">
+                            <p style="margin: 0; font-weight: 600; color: var(--navy-dark);">Active Clinical Alerts</p>
+                            <p style="margin: 0.2rem 0 0.5rem 0; font-size: 0.78rem; color: var(--slate-muted);">You have <span th:text="${unreadAlertsCount}">1</span> active item(s) requiring attention.</p>
+                            <a th:if="${role == 'DONOR'}" href="#inbox" class="btn btn-outline-primary btn-sm" style="width: 100%;">View Inbox</a>
+                            <a th:if="${role == 'REQUESTER'}" href="#demands" class="btn btn-outline-primary btn-sm" style="width: 100%;">View Demands</a>
+                            <a th:if="${role == 'ADMIN'}" href="#requests" class="btn btn-outline-primary btn-sm" style="width: 100%;">View Requests</a>
+                        </div>
+                        <div th:unless="${unreadAlertsCount != null and unreadAlertsCount > 0}" style="text-align: center; color: var(--slate-muted); padding: 0.5rem 0;">
+                            <i data-lucide="check-check" style="width: 24px; height: 24px; margin-bottom: 0.25rem; color: var(--success); display: inline-block;"></i>
+                            <p style="margin: 0; font-size: 0.8rem;">All clinical alerts are cleared.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Menu Dropdown -->
+            <div class="topbar-dropdown" id="profileDropdownWrap">
+                <button type="button" class="topbar-profile-btn" id="profileBtn" aria-label="User Profile" aria-expanded="false">
+                    <div class="profile-avatar" th:text="${#strings.substring(username, 0, 1).toUpperCase()}">U</div>
+                    <span class="profile-name" th:text="${username}">User</span>
+                    <i data-lucide="chevron-down" class="profile-caret"></i>
+                </button>
+                <div class="dropdown-menu dropdown-profile" id="profileMenu">
+                    <div class="dropdown-header">
+                        <div>
+                            <div style="font-weight: 700; color: var(--navy-dark);" th:text="${username}">username</div>
+                            <div style="font-size: 0.72rem; color: var(--slate-muted); font-weight: normal;" th:text="${roleDisplayName}">Role</div>
+                        </div>
+                    </div>
+                    <a href="#settings" class="dropdown-item">
+                        <i data-lucide="shield"></i>
+                        <span>Security & Password</span>
+                    </a>
+                    <a th:if="${role == 'DONOR'}" href="#profile" class="dropdown-item">
+                        <i data-lucide="user"></i>
+                        <span>Donor Profile</span>
+                    </a>
+                    <a th:if="${role == 'REQUESTER'}" href="#profile" class="dropdown-item">
+                        <i data-lucide="building-2"></i>
+                        <span>Facility Profile</span>
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a th:href="@{/logout}" class="dropdown-item" style="color: var(--danger);">
+                        <i data-lucide="log-out" style="color: var(--danger);"></i>
+                        <span>Sign Out</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Universal Flash Alerts Fragment -->
+    <div th:fragment="dashAlerts">
+        <div th:if="${successMessage}" class="alert alert-success">
+            <i data-lucide="check-circle" style="width: 18px; height: 18px; flex-shrink: 0;"></i>
+            <span th:text="${successMessage}">Operation completed successfully.</span>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger">
+            <i data-lucide="alert-circle" style="width: 18px; height: 18px; flex-shrink: 0;"></i>
+            <span th:text="${errorMessage}">Error occurred.</span>
+        </div>
+    </div>
+
+    <!-- Universal Account / Security Settings Panel Fragment -->
+    <div class="dash-panel" id="panel-settings" th:fragment="settingsPanel(username, role, roleDisplayName)">
+        <div class="card" style="max-width: 680px; margin: 0 auto 1.5rem auto;">
+            <div class="card-header">
+                <div>
+                    <h2 class="card-title">
+                        <i data-lucide="shield-check" style="color: var(--primary);"></i>
+                        <span>Account & Security Settings</span>
+                    </h2>
+                    <p class="card-subtitle">Manage your credentials, authentication security, and session data</p>
+                </div>
+                <span class="badge badge-normal" th:text="${role}">ROLE</span>
+            </div>
+
+            <!-- Profile Summary Box -->
+            <div style="background: var(--slate-light); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
+                <div>
+                    <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--slate-muted);">Authenticated Account</div>
+                    <div style="font-size: 1.1rem; font-weight: 800; color: var(--navy-dark);" th:text="${username}">admin</div>
+                    <div style="font-size: 0.8rem; color: var(--slate-muted);" th:text="${roleDisplayName}">Role Display Name</div>
+                </div>
+                <div>
+                    <span class="badge badge-fulfilled">BCrypt Protected</span>
+                </div>
+            </div>
+
+            <!-- Change Password Form -->
+            <h3 style="font-size: 1rem; font-weight: 700; color: var(--navy-dark); margin-bottom: 0.75rem;">Update Password</h3>
+            <form th:action="@{/account/change-password}" method="post">
+                <input type="hidden" name="_csrf" th:value="${_csrf}">
+
+                <div class="form-group">
+                    <label class="form-label" for="currentPassword">Current Password</label>
+                    <input type="password" id="currentPassword" name="currentPassword" class="form-input" placeholder="Enter current account password" required>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label" for="newPassword">New Password</label>
+                        <input type="password" id="newPassword" name="newPassword" class="form-input" minlength="4" placeholder="Min. 4 characters" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="confirmPassword">Confirm New Password</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" class="form-input" minlength="4" placeholder="Repeat new password" required>
+                    </div>
+                </div>
+
+                <p style="font-size: 0.78rem; color: var(--slate-muted); margin-bottom: 1rem;">
+                    Passwords are encrypted on the server using modern BCrypt hashing.
+                </p>
+
+                <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+                    <button type="submit" class="btn btn-primary">
+                        <i data-lucide="key-round"></i>
+                        <span>Update Password</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</body>
+</html>

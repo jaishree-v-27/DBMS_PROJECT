@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${pageTitle})}"></head>
+<body>
+
+    <!-- Header Navigation -->
+    <header th:replace="~{fragments/layout :: navbar}"></header>
+
+    <main>
+        <!-- Hero Section with Friendly Illustrated Scene -->
+        <section class="hero" id="hero">
+            <div class="hero-container">
+                <div class="hero-content">
+                    <div class="hero-badge">
+                        <i data-lucide="shield-check" style="width: 14px; height: 14px;"></i>
+                        <span>OOP and DBMS Clinical Platform</span>
+                    </div>
+                    <h1 class="hero-title">
+                        Find eligible blood donors in your city. Keep hospital blood stock <span>accurate</span>.
+                    </h1>
+                    <p class="hero-desc" style="color: #FFFFFF;">
+                        When a hospital raises a blood demand, our matching algorithm identifies nearby eligible voluntary donors who meet clinical compatibility rules. Verified donations immediately update inventory through database triggers without manual drift.
+                    </p>
+                    <div class="hero-actions">
+                        <a th:href="@{/login}" class="btn btn-primary btn-lg">
+                            <i data-lucide="log-in" style="width: 16px; height: 16px;"></i>
+                            <span>Sign In to Portal</span>
+                        </a>
+                        <button type="button" class="btn btn-secondary btn-lg" id="openMatrixBtn" onclick="openMatrixModal()">
+                            <i data-lucide="git-compare" style="width: 16px; height: 16px;"></i>
+                            <span>Interactive Matrix</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Friendly Vector Illustrated Medical Scene -->
+                <div class="hero-card" id="sceneContainer">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                        <span style="font-size: 0.8rem; font-weight: 700; color: #FFFFFF; text-transform: uppercase;">
+                            Clinical Donation Session
+                        </span>
+                        <button type="button" id="toggleAnimBtn" class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 0.2rem 0.5rem;" onclick="toggleAnimation()">
+                            <i data-lucide="pause" style="width: 12px; height: 12px;" id="animIcon"></i>
+                            <span id="animText">Pause</span>
+                        </button>
+                    </div>
+
+                    <!-- SVG Illustration -->
+                    <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius); padding: 1.25rem; text-align: center;">
+                        <svg viewBox="0 0 400 200" style="width: 100%; height: 160px; max-width: 360px;" role="img" aria-label="Illustration of a relaxed voluntary blood donor seated beside medical staff with a collecting blood bag">
+                            <!-- Background clinic room elements -->
+                            <rect x="20" y="170" width="360" height="4" fill="#E5E5E5" rx="2"/>
+                            
+                            <!-- Heartbeat Line across the top -->
+                            <path id="ekgPath" d="M 30,30 L 100,30 L 110,30 L 118,10 L 126,50 L 134,22 L 142,38 L 150,30 L 370,30" 
+                                  fill="none" stroke="#C62828" stroke-width="2.5" stroke-linecap="round">
+                                <animate attributeName="stroke-dasharray" from="0, 400" to="400, 0" dur="3s" repeatCount="indefinite" id="ekgAnim"/>
+                            </path>
+
+                            <!-- Seated Smiling Donor -->
+                            <g transform="translate(80, 70)">
+                                <!-- Chair -->
+                                <rect x="15" y="55" width="40" height="45" rx="4" fill="#252525"/>
+                                <rect x="10" y="30" width="10" height="50" rx="3" fill="#252525"/>
+                                <!-- Donor Body -->
+                                <circle cx="35" cy="20" r="14" fill="#FFF5F5" stroke="#252525" stroke-width="1.5"/> <!-- Head -->
+                                <path d="M 30,16 Q 35,22 40,16" stroke="#C62828" stroke-width="2" fill="none"/> <!-- Smile -->
+                                <circle cx="31" cy="18" r="1.5" fill="#252525"/> <!-- Left Eye -->
+                                <circle cx="39" cy="18" r="1.5" fill="#252525"/> <!-- Right Eye -->
+                                <path d="M 22,12 Q 35,5 48,12" stroke="#252525" stroke-width="4" fill="none"/> <!-- Hair -->
+                                <path d="M 22,34 L 48,34 L 44,75 L 26,75 Z" fill="#252525"/> <!-- Torso -->
+                                <rect x="38" y="44" width="28" height="8" rx="4" fill="#FFF5F5" stroke="#252525" stroke-width="1"/> <!-- Resting Arm -->
+                            </g>
+
+                            <!-- Tubing from donor to blood bag -->
+                            <path d="M 146,118 Q 180,140 210,105" fill="none" stroke="#C62828" stroke-width="2.5" stroke-linecap="round"/>
+
+                            <!-- Blood Bag Filling Gently -->
+                            <g transform="translate(200, 65)">
+                                <rect x="5" y="0" width="30" height="8" rx="2" fill="#252525"/> <!-- Bag top hanger -->
+                                <rect x="0" y="8" width="40" height="60" rx="6" fill="#FFFFFF" stroke="#252525" stroke-width="2"/>
+                                <!-- Filling liquid level -->
+                                <rect x="3" y="28" width="34" height="37" rx="4" fill="#C62828" opacity="0.95">
+                                    <animate attributeName="height" values="32;38;32" dur="4s" repeatCount="indefinite" id="bagAnim"/>
+                                </rect>
+                                <text x="20" y="48" font-size="9" font-weight="bold" fill="#FFFFFF" text-anchor="middle">450 ml</text>
+                            </g>
+
+                            <!-- Nurse Beside Donor -->
+                            <g transform="translate(265, 55)">
+                                <circle cx="35" cy="22" r="13" fill="#FFF5F5" stroke="#252525" stroke-width="1.5"/> <!-- Nurse Head -->
+                                <path d="M 31,22 Q 35,26 39,22" stroke="#C62828" stroke-width="1.5" fill="none"/> <!-- Nurse Smile -->
+                                <circle cx="32" cy="19" r="1.2" fill="#252525"/>
+                                <circle cx="38" cy="19" r="1.2" fill="#252525"/>
+                                <path d="M 24,14 Q 35,8 46,14" stroke="#252525" stroke-width="4" fill="none"/> <!-- Hair -->
+                                <!-- Medical Uniform -->
+                                <path d="M 20,35 L 50,35 L 47,95 L 23,95 Z" fill="#252525"/>
+                                <path d="M 35,42 L 35,52 M 30,47 L 40,47" stroke="#8B0000" stroke-width="2"/> <!-- Cross on tunic -->
+                            </g>
+                        </svg>
+                    </div>
+
+                    <!-- 4 Live Clinical Constraints Facts -->
+                    <div class="metrics-grid">
+                        <div class="metric-item">
+                            <div class="metric-number">8</div>
+                            <div class="metric-label" style="color: #FFFFFF;">Blood Groups</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-number">90d</div>
+                            <div class="metric-label" style="color: #FFFFFF;">Recovery Window</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-number">18 to 65</div>
+                            <div class="metric-label" style="color: #FFFFFF;">Eligible Age Range</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-number">100%</div>
+                            <div class="metric-label" style="color: #FFFFFF;">ACID Lock Safety</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dedicated About Section (Phase 3) -->
+        <section class="section" id="about">
+            <div class="section-header">
+                <span class="section-tag">System Foundation</span>
+                <h2 class="section-title" style="color: #252525;">About Blood Donor Network</h2>
+                <p class="section-desc">
+                    A centralized clinical blood coordination platform engineered for real-time donor discovery and verified database inventory sync.
+                </p>
+            </div>
+
+            <div class="about-grid">
+                <!-- Card 1: What It Is -->
+                <div class="card about-card">
+                    <div class="card-icon"><i data-lucide="activity"></i></div>
+                    <h3 class="card-title">What Blood Donor Network Is</h3>
+                    <p class="card-desc">
+                        A web-based clinical management system connecting regional hospitals, voluntary blood donors, and clinical administrators into a unified coordination framework.
+                    </p>
+                </div>
+
+                <!-- Card 2: Purpose -->
+                <div class="card about-card">
+                    <div class="card-icon"><i data-lucide="target"></i></div>
+                    <h3 class="card-title">Purpose of the Platform</h3>
+                    <p class="card-desc">
+                        To eliminate critical delays during medical emergencies by automating blood demand dispatch, antigen compatibility matching, and inventory reconciliation.
+                    </p>
+                </div>
+
+                <!-- Card 3: Problem It Solves -->
+                <div class="card about-card">
+                    <div class="card-icon"><i data-lucide="shield-alert"></i></div>
+                    <h3 class="card-title">The Problem It Solves</h3>
+                    <p class="card-desc">
+                        Solves inventory drift, dangerous double-allocation of emergency stock, slow phone-call donor outreach, and avoidable hemolytic transfusion mismatches.
+                    </p>
+                </div>
+
+                <!-- Card 4: Connecting Donors with Hospitals -->
+                <div class="card about-card">
+                    <div class="card-icon"><i data-lucide="network"></i></div>
+                    <h3 class="card-title">Connecting Donors with Hospitals</h3>
+                    <p class="card-desc">
+                        When a hospital raises a blood requisition, compatible nearby voluntary donors receive instant in-app alerts enabling rapid response and confirmation.
+                    </p>
+                </div>
+
+                <!-- Card 5: Identifying Eligible Donors -->
+                <div class="card about-card">
+                    <div class="card-icon"><i data-lucide="user-check"></i></div>
+                    <h3 class="card-title">Identifying Eligible Donors</h3>
+                    <p class="card-desc">
+                        The matching algorithm screens for legal age (18 to 65), verified blood group compatibility, and strictly enforces the 90-day recovery interval.
+                    </p>
+                </div>
+
+                <!-- Card 6: Accurate Blood Availability -->
+                <div class="card about-card">
+                    <div class="card-icon"><i data-lucide="database"></i></div>
+                    <h3 class="card-title">Why Blood Availability Matters</h3>
+                    <p class="card-desc">
+                        Accurate blood reserves save lives. Automated triggers adjust on-hand stocks upon donation verification, while row-level locks prevent conflicting disbursements.
+                    </p>
+                </div>
+
+                <!-- Card 7: Key Objectives & Benefits -->
+                <div class="card about-card about-card-wide">
+                    <div class="card-icon"><i data-lucide="check-circle-2"></i></div>
+                    <h3 class="card-title">Key Objectives & System Benefits</h3>
+                    <div class="about-benefits-list">
+                        <div class="benefit-item">
+                            <i data-lucide="check"></i>
+                            <span>Under 60-second donor discovery for acute trauma and emergency surgery</span>
+                        </div>
+                        <div class="benefit-item">
+                            <i data-lucide="check"></i>
+                            <span>Strict 90-day whole blood erythropoiesis recovery enforcement</span>
+                        </div>
+                        <div class="benefit-item">
+                            <i data-lucide="check"></i>
+                            <span>Automated MySQL trigger-based stock replenishment upon verified donations</span>
+                        </div>
+                        <div class="benefit-item">
+                            <i data-lucide="check"></i>
+                            <span>100% ACID transactional isolation with row-level locks preventing double allocation</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 1: How It Works in 4 Steps -->
+        <section class="section" id="how-it-works">
+            <div class="section-header">
+                <span class="section-tag">System Process</span>
+                <h2 class="section-title">How the Transfusion Network Operates</h2>
+                <p class="section-desc">
+                    A four-step clinical workflow coordinating demand, donor discovery, volunteer notification, and inventory sync.
+                </p>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <div style="display: flex; gap: 1rem; align-items: flex-start;">
+                        <div style="width: 36px; height: 36px; background: var(--red); color: var(--white); font-weight: 800; border-radius: var(--radius); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">1</div>
+                        <div>
+                            <h3 class="card-title">Hospital Raises Demand</h3>
+                            <p class="card-desc">Medical staff submit a patient blood requirement specifying blood group, units needed, and urgency level (Critical, High, Normal).</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div style="display: flex; gap: 1rem; align-items: flex-start;">
+                        <div style="width: 36px; height: 36px; background: var(--black); color: var(--white); font-weight: 800; border-radius: var(--radius); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">2</div>
+                        <div>
+                            <h3 class="card-title">Dual Strategy Matching</h3>
+                            <p class="card-desc">The matching engine finds exact matches in the facility's city, or evaluates hemolytic compatibility tables while enforcing the 90-day recovery rule.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div style="display: flex; gap: 1rem; align-items: flex-start;">
+                        <div style="width: 36px; height: 36px; background: var(--red); color: var(--white); font-weight: 800; border-radius: var(--radius); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">3</div>
+                        <div>
+                            <h3 class="card-title">In-App Donor Notification</h3>
+                            <p class="card-desc">Hospitals dispatch targeted in-app alerts to compatible voluntary donors. Donors review patient urgency and accept directly from their portal inbox.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div style="display: flex; gap: 1rem; align-items: flex-start;">
+                        <div style="width: 36px; height: 36px; background: var(--black); color: var(--white); font-weight: 800; border-radius: var(--radius); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">4</div>
+                        <div>
+                            <h3 class="card-title">ACID Fulfillment and Triggers</h3>
+                            <p class="card-desc">Authorized administrators fulfill demands with row-locking transactions, while recorded donations trigger automated stock replenishment.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Clinical Constraints (Phase 5) -->
+        <section id="constraints" class="section">
+            <span id="features" style="display: block; position: relative; top: -80px; visibility: hidden;"></span>
+            <div class="section-header">
+                <span class="section-tag">Clinical Protocols</span>
+                <h2 class="section-title">Clinical Constraints</h2>
+                <p class="section-desc">
+                    Mandatory clinical safety rules, geographic optimization, and transactional database integrity criteria.
+                </p>
+            </div>
+
+            <div class="constraints-grid">
+                <!-- Card 1 -->
+                <div class="card constraint-card">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+                        <div class="card-icon" style="color: var(--red);"><i data-lucide="calendar"></i></div>
+                        <span class="badge badge-critical">Critical</span>
+                    </div>
+                    <h3 class="card-title">90-Day Inter-Donation Interval</h3>
+                    <p class="card-desc">Minimum mandatory 90-day biological interval between whole blood donations to ensure complete erythrocyte restitution and replenish iron stores.</p>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="card constraint-card">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+                        <div class="card-icon" style="color: var(--red);"><i data-lucide="dna"></i></div>
+                        <span class="badge badge-critical">Critical</span>
+                    </div>
+                    <h3 class="card-title">Isohemagglutinin ABO/Rh Matching</h3>
+                    <p class="card-desc">Strict biochemical compatibility rules preventing life-threatening hemolytic transfusion reactions through automated multi-antigen cross-referencing.</p>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="card constraint-card">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+                        <div class="card-icon" style="color: var(--red);"><i data-lucide="activity"></i></div>
+                        <span class="badge badge-high">High</span>
+                    </div>
+                    <h3 class="card-title">Donor Weight &amp; Hemoglobin Floor</h3>
+                    <p class="card-desc">Mandatory clinical screening verifying minimum 50 kg body weight and &ge;12.5 g/dL hemoglobin levels prior to every phlebotomy session.</p>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="card constraint-card">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+                        <div class="card-icon" style="color: var(--red);"><i data-lucide="clock"></i></div>
+                        <span class="badge badge-high">High</span>
+                    </div>
+                    <h3 class="card-title">42-Day Whole Blood Shelf Life</h3>
+                    <p class="card-desc">CPDA-1 refrigerated storage limits whole blood viability to exactly 42 days, requiring FIFO inventory rotation and continuous cold-chain audit.</p>
+                </div>
+
+                <!-- Card 5 -->
+                <div class="card constraint-card">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+                        <div class="card-icon" style="color: var(--red);"><i data-lucide="shield-alert"></i></div>
+                        <span class="badge badge-critical">Critical</span>
+                    </div>
+                    <h3 class="card-title">Active Pathogen Deferral</h3>
+                    <p class="card-desc">Absolute exclusion protocol for active viral hepatitis, HIV, malaria history, or recent systemic infection to preserve recipient biosecurity.</p>
+                </div>
+
+                <!-- Card 6 -->
+                <div class="card constraint-card">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+                        <div class="card-icon" style="color: var(--red);"><i data-lucide="user-check"></i></div>
+                        <span class="badge badge-normal">Normal</span>
+                    </div>
+                    <h3 class="card-title">15-Minute Adverse Reaction Monitoring</h3>
+                    <p class="card-desc">Mandatory post-donation observation protocol with electrolyte hydration and clinical hemodynamic checks to prevent vasovagal syncope.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ Section -->
+        <section id="faq" class="section">
+            <div class="section-header">
+                <span class="section-tag">Clinical Explanations</span>
+                <h2 class="section-title">Frequently Asked Questions</h2>
+            </div>
+
+            <div class="faq-list">
+                <div class="faq-item">
+                    <div class="faq-header">
+                        <span>Why does the system enforce a mandatory 90-day donor recovery interval?</span>
+                        <i data-lucide="chevron-down" style="width: 18px; height: 18px;"></i>
+                    </div>
+                    <div class="faq-body" style="color: #FFFFFF;">
+                        Whole blood donation extracts approximately 450 ml of blood, depleting circulating red blood cells and iron reserves. The human body requires 8 to 12 weeks for complete erythropoiesis and iron replenishment. Enforcing a strict 90-day interval protects voluntary donors from post-donation anemia, chronic fatigue, and syncope.
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-header">
+                        <span>How does the Dual Matching strategy prevent transfusion reactions?</span>
+                        <i data-lucide="chevron-down" style="width: 18px; height: 18px;"></i>
+                    </div>
+                    <div class="faq-body" style="color: #FFFFFF;">
+                        The platform offers two algorithmic strategies: Exact Match and Compatible Match. If exact type blood is unavailable, the compatibility matcher identifies donors who lack incompatible antigens. For instance, an A+ patient can safely receive A+, A-, O+, or O- blood, but never B or AB blood, which would trigger acute hemolytic reactions.
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-header">
+                        <span>How do MySQL triggers guarantee zero inventory drift?</span>
+                        <i data-lucide="chevron-down" style="width: 18px; height: 18px;"></i>
+                    </div>
+                    <div class="faq-body" style="color: #FFFFFF;">
+                        Rather than relying entirely on application code, the database enforces an AFTER INSERT ON donation trigger. It automatically updates the donor last donation date and increments blood stock for the receiving facility in the same atomic commit.
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-header">
+                        <span>What guarantees ACID isolation during transactional blood issuance?</span>
+                        <i data-lucide="chevron-down" style="width: 18px; height: 18px;"></i>
+                    </div>
+                    <div class="faq-body" style="color: #FFFFFF;">
+                        When an administrator fulfills a blood request, RequestWorkflowService locks both the request and inventory rows with SELECT FOR UPDATE. It verifies that on-hand stock covers units needed, deducts inventory, transitions status to FULFILLED, and records an audit event in request_event within a single rollback-protected transaction.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive Transfusion Compatibility Modal (Hidden by Default, Phase 4) -->
+        <div id="matrixModal" class="matrix-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="matrixTitle" style="display: none;" onclick="if(event.target === this) closeMatrixModal();">
+            <div class="matrix-modal-container">
+                <div class="matrix-modal-header">
+                    <div>
+                        <span class="section-tag" style="margin-bottom: 0.25rem;">Interactive Clinical Tool</span>
+                        <h2 class="matrix-modal-title" id="matrixTitle">Red Blood Cell Transfusion Compatibility</h2>
+                    </div>
+                    <button type="button" class="matrix-close-btn" onclick="closeMatrixModal()" aria-label="Close interactive matrix">
+                        <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+                    </button>
+                </div>
+
+                <div class="matrix-modal-body">
+                    <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.25rem; text-align: center;">
+                        Select any blood group below to inspect safe donor and recipient interactions governed by clinical antigen rules.
+                    </p>
+
+                    <div class="matrix-interactive">
+                        <div style="text-align: center;">
+                            <span style="font-size: 0.825rem; font-weight: 700; color: var(--black); text-transform: uppercase;">
+                                Select Recipient Patient Blood Group:
+                            </span>
+                            <div class="blood-selector" style="justify-content: center;" id="bloodGroupSelector">
+                                <button type="button" class="blood-pill" data-group="O-">O-</button>
+                                <button type="button" class="blood-pill" data-group="O+">O+</button>
+                                <button type="button" class="blood-pill" data-group="A-">A-</button>
+                                <button type="button" class="blood-pill selected" data-group="A+">A+</button>
+                                <button type="button" class="blood-pill" data-group="B-">B-</button>
+                                <button type="button" class="blood-pill" data-group="B+">B+</button>
+                                <button type="button" class="blood-pill" data-group="AB-">AB-</button>
+                                <button type="button" class="blood-pill" data-group="AB+">AB+</button>
+                            </div>
+                        </div>
+
+                        <div class="matrix-result-card" id="compatResultCard">
+                            <div class="result-box">
+                                <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--black); font-weight: 700;">
+                                    <i data-lucide="arrow-down-left" style="color: var(--black); width: 18px; height: 18px;"></i>
+                                    <span>Can Safely Receive Red Cells From:</span>
+                                </div>
+                                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem;">
+                                    Compatible donor groups that will not trigger hemolytic reactions:
+                                </p>
+                                <div class="compat-chips" id="canReceiveChips">
+                                    <span class="bg-badge">A+</span>
+                                    <span class="bg-badge">A-</span>
+                                    <span class="bg-badge">O+</span>
+                                    <span class="bg-badge">O-</span>
+                                </div>
+                            </div>
+
+                            <div class="result-box">
+                                <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--black); font-weight: 700;">
+                                    <i data-lucide="arrow-up-right" style="color: var(--red); width: 18px; height: 18px;"></i>
+                                    <span>Can Safely Donate Red Cells To:</span>
+                                </div>
+                                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem;">
+                                    Patient recipient groups that can safely accept this blood:
+                                </p>
+                                <div class="compat-chips" id="canGiveChips">
+                                    <span class="bg-badge">A+</span>
+                                    <span class="bg-badge">AB+</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="matrix-modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeMatrixModal()">
+                        <span>Close Matrix</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+
+    <!-- Scripts -->
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+
+    <script>
+        let isAnimRunning = true;
+        function toggleAnimation() {
+            const ekgAnim = document.getElementById('ekgAnim');
+            const bagAnim = document.getElementById('bagAnim');
+            const btn = document.getElementById('toggleAnimBtn');
+            const animText = document.getElementById('animText');
+            
+            if (isAnimRunning) {
+                if (ekgAnim) ekgAnim.pauseElement();
+                if (bagAnim) bagAnim.pauseElement();
+                animText.textContent = 'Resume';
+                isAnimRunning = false;
+            } else {
+                if (ekgAnim) ekgAnim.unpauseElement();
+                if (bagAnim) bagAnim.unpauseElement();
+                animText.textContent = 'Pause';
+                isAnimRunning = true;
+            }
+        }
+
+        function openMatrixModal() {
+            const modal = document.getElementById('matrixModal');
+            if (modal) {
+                modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+                const selected = document.querySelector('.blood-pill.selected');
+                if (selected && typeof updateCompatibilityResults === 'function') {
+                    updateCompatibilityResults(selected.getAttribute('data-group'));
+                }
+            }
+        }
+
+        function closeMatrixModal() {
+            const modal = document.getElementById('matrixModal');
+            if (modal) {
+                modal.style.display = 'none';
+                document.body.style.overflow = '';
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeMatrixModal();
+            }
+        });
+    </script>
+</body>
+</html>

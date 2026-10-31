@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${pageTitle})}"></head>
+<body>
+
+    <div class="dash-app">
+        <!-- Mobile Sidebar Backdrop Overlay -->
+        <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+        <!-- Master Unified Sidebar -->
+        <aside class="dash-sidebar" id="dashSidebar">
+            <!-- Sidebar Header -->
+            <div class="sidebar-header">
+                <a th:href="@{/}" class="sidebar-brand">
+                    <div class="brand-icon">
+                        <i data-lucide="droplet"></i>
+                    </div>
+                    <div class="brand-text">BloodDonor<span>Network</span></div>
+                </a>
+                <button type="button" class="sidebar-close-btn" id="sidebarCloseBtn" aria-label="Close sidebar">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+
+            <!-- Role Indicator Badge -->
+            <div class="sidebar-role-badge">
+                <span class="role-indicator">●</span>
+                <span class="role-title" th:text="${roleDisplayName}">Clinical Administrator</span>
+            </div>
+
+            <!-- Grouped Navigation Menu -->
+            <nav class="sidebar-nav" id="sidebarNav" aria-label="Administrator Navigation">
+                <!-- Group 1: Overview -->
+                <div class="nav-group">
+                    <div class="nav-group-title">Overview</div>
+                    <ul class="nav-group-list">
+                        <li>
+                            <a href="#overview" class="nav-item active" data-target="panel-overview" aria-current="page">
+                                <i data-lucide="layout-dashboard"></i>
+                                <span>Overview</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Group 2: Operations -->
+                <div class="nav-group">
+                    <div class="nav-group-title">Operations</div>
+                    <ul class="nav-group-list">
+                        <li>
+                            <a href="#donors" class="nav-item" data-target="panel-donors">
+                                <i data-lucide="users"></i>
+                                <span>Voluntary Donors</span>
+                                <span class="nav-badge" th:text="${totalDonors}">20</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#hospitals" class="nav-item" data-target="panel-hospitals">
+                                <i data-lucide="building-2"></i>
+                                <span>Partner Hospitals</span>
+                                <span class="nav-badge" th:text="${totalHospitals}">3</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#requests" class="nav-item" data-target="panel-requests">
+                                <i data-lucide="clipboard-list"></i>
+                                <span>Blood Demands</span>
+                                <span class="nav-badge" th:classappend="${criticalPendingCount > 0} ? 'danger' : ''" th:text="${pendingRequests}">5</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#stock" class="nav-item" data-target="panel-stock">
+                                <i data-lucide="archive"></i>
+                                <span>Reserves & Inventory</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#donations" class="nav-item" data-target="panel-donations">
+                                <i data-lucide="syringe"></i>
+                                <span>Donation Records</span>
+                                <span class="nav-badge" th:text="${#lists.size(donations)}">0</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Group 3: Telemetry & Oversight -->
+                <div class="nav-group">
+                    <div class="nav-group-title">Oversight</div>
+                    <ul class="nav-group-list">
+                        <li>
+                            <a href="#audit" class="nav-item" data-target="panel-audit">
+                                <i data-lucide="shield-check"></i>
+                                <span>System Audit Log</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#leaderboard" class="nav-item" data-target="panel-leaderboard">
+                                <i data-lucide="award"></i>
+                                <span>Top Donors</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Group 4: System -->
+                <div class="nav-group">
+                    <div class="nav-group-title">Account</div>
+                    <ul class="nav-group-list">
+                        <li>
+                            <a href="#settings" class="nav-item" data-target="panel-settings">
+                                <i data-lucide="settings"></i>
+                                <span>Security & Settings</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Sidebar Footer -->
+            <div class="sidebar-footer">
+                <div class="user-mini-card">
+                    <div class="user-avatar" th:text="${#strings.substring(username, 0, 1).toUpperCase()}">A</div>
+                    <div class="user-info">
+                        <div class="user-name" th:text="${username}">admin</div>
+                        <div class="user-role" th:text="${role}">ADMIN</div>
+                    </div>
+                    <a th:href="@{/logout}" class="sidebar-logout-btn" title="Sign Out">
+                        <i data-lucide="log-out"></i>
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Workspace Area -->
+        <div class="dash-main-wrap">
+            <!-- Unified Topbar -->
+            <header th:replace="~{fragments/dashboard-layout :: dashTopbar('Central Oversight Console', ${username}, ${role}, ${roleDisplayName}, ${unreadAlertsCount})}"></header>
+
+            <!-- Scrollable Content Area -->
+            <main class="dash-content-area" id="dashContentArea">
+                <!-- Status Alerts -->
+                <div th:replace="~{fragments/dashboard-layout :: dashAlerts}"></div>
+
+                <!-- ==============================================================
+                     PANEL 1: OVERVIEW (Stats + Charts + Quick Action Bar)
+                     ============================================================== -->
+                <div class="dash-panel active" id="panel-overview">
+                    <!-- Title Bar with Quick Actions -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem;">
+                        <div>
+                            <h2 style="font-size: 1.5rem; font-weight: 800; color: var(--navy-dark); margin: 0;">Central Oversight Console</h2>
+                            <p style="font-size: 0.85rem; color: var(--slate-muted); margin-top: 0.2rem;">Live database records, automated inventory sync, and real-time clinical telemetry.</p>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <a th:href="@{/export/requests.csv}" class="btn btn-secondary btn-sm" title="Export blood demands to CSV">
+                                <i data-lucide="download"></i>
+                                <span>Requests CSV</span>
+                            </a>
+                            <a th:href="@{/export/inventory.csv}" class="btn btn-secondary btn-sm" title="Export inventory to CSV">
+                                <i data-lucide="download"></i>
+                                <span>Inventory CSV</span>
+                            </a>
+                            <button type="button" class="btn btn-primary btn-sm" onclick="showRecordDonationModal()">
+                                <i data-lucide="plus-circle"></i>
+                                <span>Record Donation</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 4 KPI Stat Cards -->
+                    <div class="stat-grid">
+                        <div class="stat-card">
+                            <div class="stat-top">
+                                <span class="stat-label">Voluntary Donors</span>
+                                <div class="stat-icon red"><i data-lucide="users"></i></div>
+                            </div>
+                            <div class="stat-value" th:text="${totalDonors}">20</div>
+                            <div class="stat-hint" style="color: var(--success);">
+                                <span th:text="${eligibleCount}">18</span> clinically eligible today
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-top">
+                                <span class="stat-label">Partner Hospitals</span>
+                                <div class="stat-icon blue"><i data-lucide="building-2"></i></div>
+                            </div>
+                            <div class="stat-value" th:text="${totalHospitals}">3</div>
+                            <div class="stat-hint" style="color: var(--info);">Multi-tenant facilities</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-top">
+                                <span class="stat-label">Open Demands</span>
+                                <div class="stat-icon amber"><i data-lucide="clock"></i></div>
+                            </div>
+                            <div class="stat-value" th:text="${pendingRequests}">5</div>
+                            <div class="stat-hint" th:if="${criticalPendingCount > 0}" style="color: var(--danger);">
+                                <span th:text="${criticalPendingCount}">1</span> critical demand pending > 24h
+                            </div>
+                            <div class="stat-hint" th:unless="${criticalPendingCount > 0}" style="color: var(--slate-muted);">
+                                No critical backlog
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-top">
+                                <span class="stat-label">Network Stock</span>
+                                <div class="stat-icon green"><i data-lucide="package-check"></i></div>
+                            </div>
+                            <div class="stat-value" th:text="${totalUnits}">180</div>
+                            <div class="stat-hint" style="color: var(--success);">Units ready for transfusion</div>
+                        </div>
+                    </div>
+
+                    <!-- Main Chart & Clinical Assessment -->
+                    <div class="grid-2">
+                        <div class="card" style="margin-bottom: 0;">
+                            <div class="card-header">
+                                <div>
+                                    <h3 class="card-title">Stock vs Open Demand by Group</h3>
+                                    <p class="card-subtitle">Sequence: O-, O+, A-, A+, B-, B+, AB-, AB+</p>
+                                </div>
+                                <i data-lucide="bar-chart-2" style="color: var(--primary);"></i>
+                            </div>
+                            <div style="position: relative; height: 260px;">
+                                <canvas id="chartStockVsDemand"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="card" style="display: flex; flex-direction: column; justify-content: space-between; margin-bottom: 0;">
+                            <div>
+                                <div class="card-header">
+                                    <div>
+                                        <h3 class="card-title">Clinical Stock Assessment</h3>
+                                        <p class="card-subtitle">Automated MySQL inventory recommendations</p>
+                                    </div>
+                                    <i data-lucide="shield-alert" style="color: var(--warning);"></i>
+                                </div>
+                                <div id="shortageSummaryBox" style="padding: 1rem; background: var(--slate-light); border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 0.85rem; line-height: 1.6; margin-bottom: 1rem;">
+                                    Loading live telemetry from MySQL database...
+                                </div>
+                                <div style="font-size: 0.8rem; color: var(--slate-muted); line-height: 1.5;">
+                                    <strong>Clinical Safety Protocols:</strong>
+                                    <ul style="padding-left: 1.25rem; margin-top: 0.35rem;">
+                                        <li>Available units represent inspected whole blood in hospital blood banks.</li>
+                                        <li>Demands represent active PENDING or MATCHED patient orders.</li>
+                                        <li>Universal donor O- is prioritized for emergency uncrossmatched trauma surgery.</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--slate-muted);">
+                                <span>Source: MySQL Aggregations</span>
+                                <span style="color: var(--success); font-weight: 600;">Live Connected</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2 Secondary Analytics Charts -->
+                    <div class="grid-2" style="margin-top: 1.5rem;">
+                        <div class="card" style="margin-bottom: 0;">
+                            <div class="card-header">
+                                <h3 class="card-title">Requests by Status Distribution</h3>
+                                <i data-lucide="pie-chart" style="color: var(--warning);"></i>
+                            </div>
+                            <div style="position: relative; height: 210px;">
+                                <canvas id="chartRequestsByStatus"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="card" style="margin-bottom: 0;">
+                            <div class="card-header">
+                                <h3 class="card-title">Monthly Verified Donations Trend</h3>
+                                <i data-lucide="trending-up" style="color: var(--success);"></i>
+                            </div>
+                            <div style="position: relative; height: 210px;">
+                                <canvas id="chartMonthlyTrends"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==============================================================
+                     PANEL 2: VOLUNTARY DONORS
+                     ============================================================== -->
+                <div class="dash-panel" id="panel-donors">
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h2 class="card-title">Voluntary Blood Donors</h2>
+                                <p class="card-subtitle">Registered voluntary donors with medical eligibility and donation tracking</p>
+                            </div>
+                            <span class="badge badge-normal" th:text="${totalDonors} + ' Registered'">20 Registered</span>
+                        </div>
+
+                        <div class="table-filter-bar">
+                            <div class="search-input-box">
+                                <i data-lucide="search"></i>
+                                <input type="text" id="donorSearchInput" onkeyup="filterTable('donorSearchInput', 'donorsTableBody')" placeholder="Filter donors by name, blood group, or city...">
+                            </div>
+                            <div style="font-size: 0.85rem; color: var(--slate-muted);">
+                                Showing <strong th:text="${totalDonors}">20</strong> voluntary donors
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Donor Full Name</th>
+                                        <th>Group</th>
+                                        <th>Age</th>
+                                        <th>City</th>
+                                        <th>Contact Phone</th>
+                                        <th>Available</th>
+                                        <th>Last Donated</th>
+                                        <th>Eligibility Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="donorsTableBody">
+                                    <tr th:each="d : ${donors}">
+                                        <td style="font-weight: 700; color: var(--slate-muted);" th:text="'#' + ${d.donorId}">#1</td>
+                                        <td style="font-weight: 700; color: var(--navy-dark);" th:text="${d.name}">Rahul Sharma</td>
+                                        <td><span class="bg-badge" th:text="${d.bloodGroup}">O+</span></td>
+                                        <td th:text="${d.age} + ' yrs'">29 yrs</td>
+                                        <td th:text="${d.city}">Chennai</td>
+                                        <td>
+                                            <a th:href="'tel:' + ${d.phone}" style="color: var(--primary); font-weight: 600;" th:text="${d.phone}">9876543210</a>
+                                        </td>
+                                        <td>
+                                            <span th:if="${d.available}" class="badge badge-fulfilled">YES</span>
+                                            <span th:unless="${d.available}" class="badge badge-cancelled">NO</span>
+                                        </td>
+                                        <td th:text="${d.lastDonationDate != null ? d.lastDonationDate : 'Never Donated'}">2026-01-15</td>
+                                        <td>
+                                            <span th:if="${d.isEligible(90)}" class="badge badge-eligible">Eligible</span>
+                                            <span th:unless="${d.isEligible(90)}" class="badge badge-recovery">Recovery</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==============================================================
+                     PANEL 3: PARTNER HOSPITALS
+                     ============================================================== -->
+                <div class="dash-panel" id="panel-hospitals">
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h2 class="card-title">Partner Clinical Facilities</h2>
+                                <p class="card-subtitle">Authorized multi-tenant hospitals and transfusion centers</p>
+                            </div>
+                            <span class="badge badge-normal" th:text="${totalHospitals} + ' Hospitals'">3 Hospitals</span>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Hospital ID</th>
+                                        <th>Clinical Facility Name</th>
+                                        <th>City Location</th>
+                                        <th>Contact Phone</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="h : ${hospitals}">
+                                        <td style="font-weight: 700; color: var(--slate-muted);" th:text="'#' + ${h.hospitalId}">#1</td>
+                                        <td style="font-weight: 700; color: var(--navy-dark);" th:text="${h.name}">Apollo Speciality Hospital</td>
+                                        <td th:text="${h.city}">Chennai</td>
+                                        <td>
+                                            <a th:href="'tel:' + ${h.phone}" style="color: var(--primary); font-weight: 600;" th:text="${h.phone}">044-28290200</a>
+                                        </td>
+                                        <td><span class="badge badge-fulfilled">Active Facility</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==============================================================
+                     PANEL 4: BLOOD DEMANDS & ACID FULFILLMENT
+                     ============================================================== -->
+                <div class="dash-panel" id="panel-requests">
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h2 class="card-title">System Blood Demands</h2>
+                                <p class="card-subtitle">Active and fulfilled hospital transfusion demands across the network</p>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <a th:href="@{/export/requests.csv}" class="btn btn-secondary btn-sm">
+                                    <i data-lucide="download"></i>
+                                    <span>Export CSV</span>
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="table-filter-bar">
+                            <div class="search-input-box">
+                                <i data-lucide="search"></i>
+                                <input type="text" id="reqSearchInput" onkeyup="filterTable('reqSearchInput', 'reqTableBody')" placeholder="Filter by patient, hospital, or blood group...">
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Req ID</th>
+                                        <th>Hospital</th>
+                                        <th>Patient Name</th>
+                                        <th>Group</th>
+                                        <th>Needed</th>
+                                        <th>On-Hand</th>
+                                        <th>Urgency</th>
+                                        <th>Status</th>
+                                        <th>Waiting Age</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reqTableBody">
+                                    <tr th:each="r : ${requests}">
+                                        <td style="font-weight: 700; color: var(--slate-muted);" th:text="'#' + ${r.requestId}">#1</td>
+                                        <td style="font-weight: 600;" th:text="${r.hospitalName}">Apollo Hospital</td>
+                                        <td style="font-weight: 700; color: var(--navy-dark);">
+                                            <a th:href="@{/request/{id}(id=${r.requestId})}" style="color: var(--navy-dark);" th:text="${r.patientName}">Ramesh Kumar</a>
+                                        </td>
+                                        <td><span class="bg-badge" th:text="${r.bloodGroup}">A+</span></td>
+                                        <td style="font-weight: 700;" th:text="${r.unitsNeeded} + 'u'">2u</td>
+                                        <td style="font-weight: 700; color: var(--primary);" th:text="${r.allocatableNow} + 'u'">1u</td>
+                                        <td>
+                                            <span th:if="${r.urgency.name() == 'CRITICAL'}" class="badge badge-critical">CRITICAL</span>
+                                            <span th:if="${r.urgency.name() == 'HIGH'}" class="badge badge-high">HIGH</span>
+                                            <span th:if="${r.urgency.name() == 'NORMAL'}" class="badge badge-normal">NORMAL</span>
+                                        </td>
+                                        <td>
+                                            <span th:if="${r.status.name() == 'PENDING'}" class="badge badge-pending">PENDING</span>
+                                            <span th:if="${r.status.name() == 'MATCHED'}" class="badge badge-matched">MATCHED</span>
+                                            <span th:if="${r.status.name() == 'FULFILLED'}" class="badge badge-fulfilled">FULFILLED</span>
+                                            <span th:if="${r.status.name() == 'CANCELLED'}" class="badge badge-cancelled">CANCELLED</span>
+                                        </td>
+                                        <td>
+                                            <span th:classappend="${r.isCriticalLongWait} ? 'badge badge-critical' : ''" th:text="${r.daysWaiting} + ' d'">2 d</span>
+                                        </td>
+                                        <td>
+                                            <div style="display: flex; gap: 0.35rem; align-items: center;">
+                                                <a th:href="@{/request/{id}(id=${r.requestId})}" class="btn btn-secondary btn-sm" title="View details and audit history">
+                                                    <i data-lucide="eye"></i>
+                                                    <span>Details</span>
+                                                </a>
+
+                                                <form th:if="${(r.status.name() == 'PENDING' or r.status.name() == 'MATCHED') and r.allocatableNow >= r.unitsNeeded}" 
+                                                      th:action="@{/admin/issue-blood}" method="post" style="display: inline;">
+                                                    <input type="hidden" name="_csrf" th:value="${_csrf}">
+                                                    <input type="hidden" name="requestId" th:value="${r.requestId}">
+                                                    <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('Execute atomic blood issuance from inventory for demand #' + [[${r.requestId}]] + '?');">
+                                                        <i data-lucide="check-circle"></i>
+                                                        <span>Issue Blood</span>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==============================================================
+                     PANEL 5: RESERVES & INVENTORY
+                     ============================================================== -->
+                <div class="dash-panel" id="panel-stock">
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h2 class="card-title">Hospital Blood Reserves</h2>
+                                <p class="card-subtitle">Audited inventory by facility location and red cell group</p>
+                            </div>
+                            <a th:href="@{/export/inventory.csv}" class="btn btn-secondary btn-sm">
+                                <i data-lucide="download"></i>
+                                <span>Export Inventory CSV</span>
+                            </a>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Facility</th>
+                                        <th>City</th>
+                                        <th>Blood Group</th>
+                                        <th>Units On-Hand</th>
+                                        <th>Reserve Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="s : ${stockPerHosp}">
+                                        <td style="font-weight: 700; color: var(--navy-dark);" th:text="${s.hospital_name}">Apollo Hospital</td>
+                                        <td th:text="${s.city}">Chennai</td>
+                                        <td><span class="bg-badge" th:text="${s.blood_group}">A+</span></td>
+                                        <td style="font-weight: 800; font-size: 1rem;" th:text="${s.units_available} + ' units'">5 units</td>
+                                        <td>
+                                            <span th:if="${s.units_available < 3}" class="badge badge-critical">SHORTAGE WARNING</span>
+                                            <span th:unless="${s.units_available < 3}" class="badge badge-fulfilled">ADEQUATE</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==============================================================
+                     PANEL 6: DONATIONS LOG
+                     ============================================================== -->
+                <div class="dash-panel" id="panel-donations">
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h2 class="card-title">Verified Whole Blood Donations Log</h2>
+                                <p class="card-subtitle">Every record credits inventory and syncs the donor recovery date via MySQL database triggers</p>
+                            </div>
+                            <button type="button" class="btn btn-primary btn-sm" onclick="showRecordDonationModal()">
+                                <i data-lucide="plus-circle"></i>
+                                <span>Record Donation</span>
+                            </button>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Donation ID</th>
+                                        <th>Donor ID</th>
+                                        <th>Hospital Facility</th>
+                                        <th>Units Donated</th>
+                                        <th>Session Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="dn : ${donations}">
+                                        <td style="font-weight: 700; color: var(--slate-muted);" th:text="'#' + ${dn.donationId}">#1</td>
+                                        <td style="font-weight: 700; color: var(--navy-dark);" th:text="'Donor #' + ${dn.donorId}">Donor #1</td>
+                                        <td th:text="'Facility #' + ${dn.hospitalId}">Facility #1</td>
+                                        <td style="font-weight: 700;" th:text="${dn.units} + ' unit'">1 unit</td>
+                                        <td th:text="${dn.donationDate}">2026-03-01</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==============================================================
+                     PANEL 7: SYSTEM AUDIT LOG
+                     ============================================================== -->
+                <div class="dash-panel" id="panel-audit">
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h2 class="card-title">System Audit Trail</h2>
+                                <p class="card-subtitle">Immutable chronological audit log of all request lifecycle transitions and issuances</p>
+                            </div>
+                            <span class="badge badge-fulfilled">Audited</span>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Event ID</th>
+                                        <th>Req ID</th>
+                                        <th>Event Type</th>
+                                        <th>Status Transition</th>
+                                        <th>Actor Account</th>
+                                        <th>Clinical Log Note</th>
+                                        <th>Timestamp</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="ev : ${recentEvents}">
+                                        <td style="font-weight: 700; color: var(--slate-muted);" th:text="'#' + ${ev.event_id}">#1</td>
+                                        <td>
+                                            <a th:href="@{/request/{id}(id=${ev.request_id})}" style="font-weight: 700; color: var(--primary);" th:text="'Req #' + ${ev.request_id}">Req #1</a>
+                                        </td>
+                                        <td><span class="badge badge-normal" th:text="${ev.event_type}">CREATED</span></td>
+                                        <td>
+                                            <span th:if="${ev.from_status != null}" th:text="${ev.from_status} + ' > ' + ${ev.to_status}">PENDING > MATCHED</span>
+                                            <span th:unless="${ev.from_status != null}" th:text="${ev.to_status}">PENDING</span>
+                                        </td>
+                                        <td style="font-weight: 600;" th:text="${ev.actor_username != null ? ev.actor_username : 'System Trigger'}">admin</td>
+                                        <td style="font-size: 0.8rem; color: var(--slate-body); max-width: 320px;" th:text="${ev.note}">Note</td>
+                                        <td style="font-size: 0.78rem; color: var(--slate-muted);" th:text="${ev.created_at}">2026-10-25 01:00:00</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==============================================================
+                     PANEL 8: TOP DONORS LEADERBOARD
+                     ============================================================== -->
+                <div class="dash-panel" id="panel-leaderboard">
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h2 class="card-title">Top Voluntary Donors Leaderboard</h2>
+                                <p class="card-subtitle">Recognizing lifetime voluntary blood donations from database records</p>
+                            </div>
+                            <span class="badge badge-fulfilled">Ethical Recognition</span>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Rank</th>
+                                        <th>Donor Name</th>
+                                        <th>Group</th>
+                                        <th>City</th>
+                                        <th>Total Verified Units</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="td, iter : ${topDonors}">
+                                        <td style="font-weight: 800; font-size: 1rem; color: var(--navy-dark);" th:text="'#' + ${iter.count}">#1</td>
+                                        <td style="font-weight: 700; color: var(--navy-dark);" th:text="${td.name}">Rahul Sharma</td>
+                                        <td><span class="bg-badge" th:text="${td.blood_group}">O+</span></td>
+                                        <td th:text="${td.city}">Chennai</td>
+                                        <td style="font-weight: 800; color: var(--primary);" th:text="${td.total_units_donated} + ' units'">3 units</td>
+                                        <td><span class="badge badge-fulfilled">Community Hero</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==============================================================
+                     PANEL 9: ACCOUNT & SECURITY SETTINGS
+                     ============================================================== -->
+                <div th:replace="~{fragments/dashboard-layout :: settingsPanel(${username}, ${role}, ${roleDisplayName})}"></div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Record Donation Modal Dialog -->
+    <div id="recordDonationModal" class="modal-overlay">
+        <div class="modal-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                <h3 style="font-size: 1.2rem; font-weight: 800; color: var(--navy-dark); margin: 0;">Record Verified Donation</h3>
+                <button type="button" onclick="hideRecordDonationModal()" class="btn btn-secondary btn-sm" style="padding: 0.2rem 0.5rem;">✕</button>
+            </div>
+
+            <form th:action="@{/admin/record-donation}" method="post">
+                <input type="hidden" name="_csrf" th:value="${_csrf}">
+
+                <div class="form-group">
+                    <label class="form-label" for="modalDonorId">Select Voluntary Donor</label>
+                    <select id="modalDonorId" name="donorId" class="form-select" required>
+                        <option th:each="d : ${donors}" th:value="${d.donorId}" 
+                                th:text="|${d.name} (${d.bloodGroup}, ${d.city}${d.isEligible(90) ? ' [Eligible]' : ' [Recovery]'})|">
+                            Rahul Sharma
+                        </option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="modalHospitalId">Receiving Hospital Facility</label>
+                    <select id="modalHospitalId" name="hospitalId" class="form-select" required>
+                        <option th:each="h : ${hospitals}" th:value="${h.hospitalId}" th:text="|${h.name} (${h.city})|">
+                            Apollo Speciality Hospital
+                        </option>
+                    </select>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label" for="modalUnits">Whole Blood Units</label>
+                        <input type="number" id="modalUnits" name="units" class="form-input" min="1" max="2" value="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="modalDate">Donation Date</label>
+                        <input type="date" id="modalDate" name="donationDate" class="form-input" th:value="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}" required>
+                    </div>
+                </div>
+
+                <p style="font-size: 0.78rem; color: var(--slate-muted); margin-bottom: 1rem;">
+                    MySQL database triggers will automatically credit hospital inventory and update donor recovery date atomically.
+                </p>
+
+                <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+                    <button type="button" onclick="hideRecordDonationModal()" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Donation Record</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts Fragment -->
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+
+    <script>
+        function showRecordDonationModal() {
+            document.getElementById('recordDonationModal').classList.add('show');
+        }
+        function hideRecordDonationModal() {
+            document.getElementById('recordDonationModal').classList.remove('show');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initAdminCharts();
+        });
+
+        async function initAdminCharts() {
+            try {
+                // 1. Stock vs Demand Grouped Bar Chart
+                const svdRes = await fetch('/api/analytics/stock-vs-demand');
+                const svdData = await svdRes.json();
+
+                const summaryBox = document.getElementById('shortageSummaryBox');
+                if (summaryBox && svdData.summary) {
+                    summaryBox.textContent = svdData.summary;
+                    if (svdData.totalShortage > 0) {
+                        summaryBox.style.backgroundColor = 'var(--red-tint, #FFF5F5)';
+                        summaryBox.style.borderColor = 'var(--btn-red, #C62828)';
+                        summaryBox.style.color = 'var(--primary-red, #8B0000)';
+                    } else {
+                        summaryBox.style.backgroundColor = '#FAFAFA';
+                        summaryBox.style.borderColor = '#E5E5E5';
+                        summaryBox.style.color = '#252525';
+                    }
+                }
+
+                const svdCtx = document.getElementById('chartStockVsDemand');
+                if (svdCtx && typeof Chart !== 'undefined') {
+                    new Chart(svdCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: svdData.labels,
+                            datasets: [
+                                {
+                                    label: 'Available Units (On-Hand)',
+                                    data: svdData.available,
+                                    backgroundColor: '#8B0000',
+                                    borderRadius: 4
+                                },
+                                {
+                                    label: 'Requested Units (Open Demands)',
+                                    data: svdData.requested,
+                                    backgroundColor: '#252525',
+                                    borderRadius: 4
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { position: 'top', labels: { boxWidth: 12, font: { size: 11 } } }
+                            },
+                            scales: {
+                                y: { beginAtZero: true, ticks: { precision: 0 } }
+                            }
+                        }
+                    });
+                }
+
+                // 2. Requests by Status Doughnut Chart
+                const reqRes = await fetch('/api/analytics/requests-by-status');
+                const reqData = await reqRes.json();
+
+                const reqCtx = document.getElementById('chartRequestsByStatus');
+                if (reqCtx && typeof Chart !== 'undefined') {
+                    new Chart(reqCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: reqData.labels,
+                            datasets: [{
+                                data: reqData.data,
+                                backgroundColor: ['#8B0000', '#C62828', '#252525', '#666666']
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } }
+                            }
+                        }
+                    });
+                }
+
+                // 3. Monthly Trends Line Chart
+                const trendRes = await fetch('/api/analytics/monthly-trends');
+                const trendData = await trendRes.json();
+
+                const trendCtx = document.getElementById('chartMonthlyTrends');
+                if (trendCtx && typeof Chart !== 'undefined') {
+                    new Chart(trendCtx, {
+                        type: 'line',
+                        data: {
+                            labels: trendData.labels,
+                            datasets: [{
+                                label: 'Verified Donations',
+                                data: trendData.data,
+                                borderColor: '#8B0000',
+                                backgroundColor: 'rgba(139, 0, 0, 0.08)',
+                                fill: true,
+                                tension: 0.3,
+                                pointBackgroundColor: '#8B0000'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            scales: {
+                                y: { beginAtZero: true, ticks: { precision: 0 } }
+                            }
+                        }
+                    });
+                }
+            } catch (err) {
+                console.error("Error loading analytical telemetry:", err);
+            }
+        }
+    </script>
+</body>
+</html>

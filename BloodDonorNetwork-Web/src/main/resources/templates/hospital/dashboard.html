@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${pageTitle})}"></head>
+<body>
+
+    <div class="dash-app">
+        <!-- Mobile Sidebar Backdrop Overlay -->
+        <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+        <!-- Master Unified Sidebar -->
+        <aside class="dash-sidebar" id="dashSidebar">
+            <!-- Sidebar Header -->
+            <div class="sidebar-header">
+                <a th:href="@{/}" class="sidebar-brand">
+                    <div class="brand-icon">
+                        <i data-lucide="droplet"></i>
+                    </div>
+                    <div class="brand-text">BloodDonor<span>Network</span></div>
+                </a>
+                <button type="button" class="sidebar-close-btn" id="sidebarCloseBtn" aria-label="Close sidebar">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+
+            <!-- Role Indicator Badge -->
+            <div class="sidebar-role-badge">
+                <span class="role-indicator">●</span>
+                <span class="role-title" th:text="${hospitalName}">Apollo Speciality Hospital</span>
+            </div>
+
+            <!-- Grouped Navigation Menu -->
+            <nav class="sidebar-nav" id="sidebarNav" aria-label="Hospital Navigation">
+                <!-- Group 1: Overview -->
+                <div class="nav-group">
+                    <div class="nav-group-title">Overview</div>
+                    <ul class="nav-group-list">
+                        <li>
+                            <a href="#overview" class="nav-item active" data-target="panel-overview" aria-current="page">
+                                <i data-lucide="layout-dashboard"></i>
+                                <span>Facility Overview</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Group 2: Clinical Operations -->
+                <div class="nav-group">
+                    <div class="nav-group-title">Operations</div>
+                    <ul class="nav-group-list">
+                        <li>
+                            <a href="#raise-demand" class="nav-item" data-target="panel-raise-demand">
+                                <i data-lucide="plus-circle"></i>
+                                <span>Raise Demand</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#demands" class="nav-item" data-target="panel-demands">
+                                <i data-lucide="clipboard-list"></i>
+                                <span>Blood Demands</span>
+                                <span class="nav-badge" th:text="${activeRequests}">0</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#reserves" class="nav-item" data-target="panel-reserves">
+                                <i data-lucide="archive"></i>
+                                <span>Reserves & Stock</span>
+                                <span class="nav-badge" th:text="${hospitalUnits} + 'u'">0u</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#matching" class="nav-item" data-target="panel-matching">
+                                <i data-lucide="git-merge"></i>
+                                <span>Donor Matching</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Group 3: Account -->
+                <div class="nav-group">
+                    <div class="nav-group-title">Account</div>
+                    <ul class="nav-group-list">
+                        <li>
+                            <a href="#profile" class="nav-item" data-target="panel-profile">
+                                <i data-lucide="building-2"></i>
+                                <span>Facility Profile</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#settings" class="nav-item" data-target="panel-settings">
+                                <i data-lucide="settings"></i>
+                                <span>Security & Settings</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Sidebar Footer -->
+            <div class="sidebar-footer">
+                <div class="user-mini-card">
+                    <div class="user-avatar" th:text="${#strings.substring(username, 0, 1).toUpperCase()}">H</div>
+                    <div class="user-info">
+                        <div class="user-name" th:text="${username}">hospital_apollo</div>
+                        <div class="user-role" th:text="${hospitalCity}">Chennai</div>
+                    </div>
+                    <a th:href="@{/logout}" class="sidebar-logout-btn" title="Sign Out">
+                        <i data-lucide="log-out"></i>
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Workspace Area -->
+        <div class="dash-main-wrap">
+            <!-- Unified Topbar -->
+            <header th:replace="~{fragments/dashboard-layout :: dashTopbar('Hospital Clinical Workspace', ${username}, ${role}, ${roleDisplayName}, ${unreadAlertsCount})}"></header>
+
+            <!-- Scrollable Content Area -->
+            <main class="dash-content-area" id="dashContentArea">
+                <!-- Status Alerts -->
+                <div th:replace="~{fragments/dashboard-layout :: dashAlerts}"></div>
+
+                <!-- ==============================================================
+                     PANEL 1: FACILITY OVERVIEW
+                     ============================================================== -->
+                <div class="dash-panel active" id="panel-overview">
+                    <!-- Facility Banner Card -->
+                    <div class="card" style="background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-color);">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+                            <div>
+                                <div style="display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.2rem 0.55rem; background: var(--white); border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 0.6rem;">
+                                    <i data-lucide="building-2" style="width: 13px; height: 13px; color: var(--primary-red);"></i>
+                                    <span style="color: var(--primary-red);">Authorized Healthcare Facility</span>
+                                </div>
+                                <h2 style="font-size: 1.85rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.35rem; color: var(--text-main);" th:text="${hospitalName}">
+                                    Apollo Speciality Hospital
+                                </h2>
+                                <p style="color: var(--text-secondary); font-size: 0.9rem; display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap; margin: 0;">
+                                    <span>Location: <strong th:text="${hospitalCity}">Chennai</strong></span>
+                                    <span>&bull;</span>
+                                    <span>Facility ID: <strong th:text="'#' + ${hospitalId}">#1</strong></span>
+                                    <span>&bull;</span>
+                                    <span>Contact: <a th:href="'tel:' + ${hospitalPhone}" style="color: var(--primary-red);" th:text="${hospitalPhone}">044-28290200</a></span>
+                                </p>
+                            </div>
+
+                            <div style="display: flex; gap: 0.75rem; align-items: center;">
+                                <a href="#raise-demand" class="btn btn-primary" onclick="switchPanel('panel-raise-demand', document.querySelector('[data-target=\'panel-raise-demand\']'))">
+                                    <i data-lucide="plus-circle"></i>
+                                    <span>Raise Blood Demand</span>
+                                </a>
+                                <a th:href="@{/export/requests.csv}" class="btn btn-secondary btn-sm" title="Export facility demands to CSV">
+                                    <i data-lucide="download"></i>
+                                    <span>Requests CSV</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3 KPI Metric Cards -->
+                    <div class="stat-grid">
+                        <div class="stat-card">
+                            <div class="stat-top">
+                                <span class="stat-label">On-Hand Blood Units</span>
+                                <div class="stat-icon green"><i data-lucide="archive"></i></div>
+                            </div>
+                            <div class="stat-value" style="color: var(--success);" th:text="${hospitalUnits}">0</div>
+                            <div class="stat-hint" style="color: var(--success);">Available across 8 blood groups</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-top">
+                                <span class="stat-label">Active Demands</span>
+                                <div class="stat-icon amber"><i data-lucide="clock"></i></div>
+                            </div>
+                            <div class="stat-value" style="color: var(--warning);" th:text="${activeRequests}">0</div>
+                            <div class="stat-hint" style="color: var(--warning);">Pending or matched requests</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-top">
+                                <span class="stat-label">Facility City</span>
+                                <div class="stat-icon blue"><i data-lucide="map-pin"></i></div>
+                            </div>
+                            <div class="stat-value" style="font-size: 1.6rem;" th:text="${hospitalCity}">Chennai</div>
+                            <div class="stat-hint" style="color: var(--info);">Local voluntary donor pool</div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Reserves Preview (8 groups) -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h3 class="card-title">Reserves Overview</h3>
+                                <p class="card-subtitle">On-hand whole blood units in hospital blood bank</p>
+                            </div>
+                            <a href="#reserves" class="btn btn-secondary btn-sm" onclick="switchPanel('panel-reserves', document.querySelector('[data-target=\'panel-reserves\']'))">
+                                <span>View Full Inventory</span>
+                                <i data-lucide="arrow-right"></i>
+                            </a>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 0.75rem;">
+                            <div th:each="bg : ${orderedBloodGroups}" style="background: var(--slate-light); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 0.75rem; text-align: center;">
+                                <span class="bg-badge" style="font-size: 0.85rem;" th:text="${bg}">O+</span>
+                                <div style="font-size: 1.25rem; font-weight: 800; color: var(--navy-dark); margin: 0.35rem 0;" th:text="${stockMap.getOrDefault(bg, 0)} + 'u'">4u</div>
+                                <div style="font-size: 0.7rem; font-weight: 600;">
+                                    <span th:if="${stockMap.getOrDefault(bg, 0) < 3}" style="color: var(--danger);">Low</span>
+                                    <span th:unless="${stockMap.getOrDefault(bg, 0) < 3}" style="color: var(--success);">OK</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Demands Preview -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h3 class="card-title">Recent Demands</h3>
+                                <p class="card-subtitle">Latest transfusion orders raised by this facility</p>
+                            </div>
+                            <a href="#demands" class="btn btn-secondary btn-sm" onclick="switchPanel('panel-demands', document.querySelector('[data-target=\'panel-demands\']'))">
+                                <span>All Demands</span>
+                                <i data-lucide="arrow-right"></i>
+                            </a>
+                        </div>
+
+                        <div class="table-filter-bar" style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
+                            <div class="urgency-filter-bar" style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
+                                <span style="font-size: 0.78rem; font-weight: 700; color: var(--slate-muted); text-transform: uppercase; margin-right: 0.25rem;">Urgency:</span>
+                                <button type="button" class="btn btn-secondary btn-sm urgency-pill active" onclick="filterByUrgency(this, 'ALL', 'recentDemandsBody')" style="padding: 0.25rem 0.65rem; font-size: 0.78rem;">All</button>
+                                <button type="button" class="btn btn-secondary btn-sm urgency-pill" onclick="filterByUrgency(this, 'CRITICAL', 'recentDemandsBody')" style="padding: 0.25rem 0.65rem; font-size: 0.78rem;">Critical</button>
+                                <button type="button" class="btn btn-secondary btn-sm urgency-pill" onclick="filterByUrgency(this, 'HIGH', 'recentDemandsBody')" style="padding: 0.25rem 0.65rem; font-size: 0.78rem;">High</button>
+                                <button type="button" class="btn btn-secondary btn-sm urgency-pill" onclick="filterByUrgency(this, 'NORMAL', 'recentDemandsBody')" style="padding: 0.25rem 0.65rem; font-size: 0.78rem;">Medium</button>
+                                <button type="button" class="btn btn-secondary btn-sm urgency-pill" onclick="filterByUrgency(this, 'LOW', 'recentDemandsBody')" style="padding: 0.25rem 0.65rem; font-size: 0.78rem;">Low</button>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Req ID</th>
+                                        <th>Patient</th>
+                                        <th>Group</th>
+                                        <th>Units</th>
+                                        <th>Urgency</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recentDemandsBody">
+                                    <tr th:each="hr, iter : ${requests}" th:if="${iter.index < 5}" th:attr="data-urgency=${hr.request.urgency.name()}">
+                                        <td style="font-weight: 700; color: var(--slate-muted);" th:text="'#' + ${hr.request.requestId}">#1</td>
+                                        <td style="font-weight: 700; color: var(--navy-dark);" th:text="${hr.request.patientName}">Priya Sundaram</td>
+                                        <td><span class="bg-badge" th:text="${hr.request.bloodGroup}">O-</span></td>
+                                        <td style="font-weight: 700;" th:text="${hr.request.unitsNeeded} + 'u'">2u</td>
+                                        <td>
+                                            <span th:if="${hr.request.urgency.name() == 'CRITICAL'}" class="badge badge-critical">CRITICAL</span>
+                                            <span th:if="${hr.request.urgency.name() == 'HIGH'}" class="badge badge-high">HIGH</span>
+                                            <span th:if="${hr.request.urgency.name() == 'NORMAL'}" class="badge badge-normal">NORMAL</span>
+                                        </td>
+                                        <td>
+                                            <span th:if="${hr.request.status.name() == 'PENDING'}" class="badge badge-pending">PENDING</span>
+                                            <span th:if="${hr.request.status.name() == 'MATCHED'}" class="badge badge-matched">MATCHED</span>
+                                            <span th:if="${hr.request.status.name() == 'FULFILLED'}" class="badge badge-fulfilled">FULFILLED</span>
+                                            <span th:if="${hr.request.status.name() == 'CANCELLED'}" class="badge badge-cancelled">CANCELLED</span>
+                                        </td>
+                                        <td>
+                                            <a th:href="@{/request/{id}(id=${hr.request.requestId})}" class="btn btn-secondary btn-sm">
+                                                <i data-lucide="eye"></i>
+                                                <span>Details</span>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${#lists.isEmpty(requests)}">
+                                        <td colspan="7" style="text-align: center; color: var(--slate-muted); padding: 1.5rem;">
+                                            No active blood requests recorded yet.
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==============================================================
+                     PANEL 2: RAISE BLOOD DEMAND
+                     ============================================================== -->
+                <div class="dash-panel" id="panel-raise-demand">
+                    <div class="grid-2">
+                        <!-- Transfusion Demand Form -->
+                        <div class="card">
+                            <div class="card-header">
+                                <div>
+                                    <h2 class="card-title">Raise Transfusion Demand</h2>
+                                    <p class="card-subtitle">Submit clinical blood requirements for hospitalized patients</p>
+                                </div>
+                                <i data-lucide="plus-circle" style="color: var(--primary);"></i>
+                            </div>
+
+                            <form th:action="@{/hospital/request/new}" method="post">
+                                <input type="hidden" name="_csrf" th:value="${_csrf}">
+
+                                <div class="form-group">
+                                    <label class="form-label" for="patientName">Patient Full Name</label>
+                                    <input type="text" id="patientName" name="patientName" class="form-input" placeholder="e.g. Ramesh Chandran" required>
+                                </div>
+
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                    <div class="form-group">
+                                        <label class="form-label" for="bloodGroup">Blood Group</label>
+                                        <select id="bloodGroup" name="bloodGroup" class="form-select" required>
+                                            <option value="A+">A+</option>
+                                            <option value="A-">A-</option>
+                                            <option value="B+">B+</option>
+                                            <option value="B-">B-</option>
+                                            <option value="AB+">AB+</option>
+                                            <option value="AB-">AB-</option>
+                                            <option value="O+" selected>O+</option>
+                                            <option value="O-">O-</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label" for="unitsNeeded">Units Needed (1 to 20)</label>
+                                        <input type="number" id="unitsNeeded" name="unitsNeeded" class="form-input" min="1" max="20" value="1" required>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label" for="urgency">Clinical Urgency Level</label>
+                                    <select id="urgency" name="urgency" class="form-select" required>
+                                        <option value="CRITICAL">CRITICAL (Immediate Trauma or ICU Procedure)</option>
+                                        <option value="HIGH">HIGH (Within 12 to 24 Hours)</option>
+                                        <option value="NORMAL" selected>NORMAL (Elective / Scheduled Procedure)</option>
+                                    </select>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top: 1rem;">
+                                    <i data-lucide="send"></i>
+                                    <span>Submit Transfusion Demand</span>
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Clinical Facility Operating Protocols -->
+                        <div class="card">
+                            <div class="card-header">
+                                <div>
+                                    <h3 class="card-title">Facility Operating Protocols</h3>
+                                    <p class="card-subtitle">Strict compliance rules for transfusion requests</p>
+                                </div>
+                                <i data-lucide="book-open" style="color: var(--info);"></i>
+                            </div>
+
+                            <div style="display: flex; flex-direction: column; gap: 0.85rem; font-size: 0.85rem; line-height: 1.55;">
+                                <div style="padding: 0.85rem; background: var(--slate-light); border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                                    <strong style="color: var(--navy-dark); display: flex; align-items: center; gap: 0.35rem;">
+                                        <i data-lucide="bell" style="width: 14px; height: 14px; color: var(--primary);"></i>
+                                        <span>In-App Notifications</span>
+                                    </strong>
+                                    <p style="color: var(--slate-muted); font-size: 0.8rem; margin: 0.25rem 0 0 0;">
+                                        Notifications dispatched through this portal appear immediately in registered donor inboxes. Voluntary donors can accept or decline directly.
+                                    </p>
+                                </div>
+
+                                <div style="padding: 0.85rem; background: var(--slate-light); border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                                    <strong style="color: var(--navy-dark); display: flex; align-items: center; gap: 0.35rem;">
+                                        <i data-lucide="shield-check" style="width: 14px; height: 14px; color: var(--success);"></i>
+                                        <span>Multi-Tenant Facility Isolation</span>
+                                    </strong>
+                                    <p style="color: var(--slate-muted); font-size: 0.8rem; margin: 0.25rem 0 0 0;">
+                                        Your facility can only access, match, and cancel demands belonging to <strong th:text="${hospitalName}">Facility</strong>.
+                                    </p>
+                                </div>
+
+                                <div style="padding: 0.85rem; background: var(--slate-light); border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                                    <strong style="color: var(--navy-dark); display: flex; align-items: center; gap: 0.35rem;">
+                                        <i data-lucide="lock" style="width: 14px; height: 14px; color: var(--navy-dark);"></i>
+                                        <span>Transactional Immutability</span>
+                                    </strong>
+                                    <p style="color: var(--slate-muted); font-size: 0.8rem; margin: 0.25rem 0 0 0;">
+                                        Requests fulfilled through ACID stock deductions are permanent audit records and cannot be cancelled.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==============================================================
+                     PANEL 3: BLOOD DEMANDS TABLE
+                     ============================================================== -->
+                <div class="dash-panel" id="panel-demands">
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h2 class="card-title">Hospital Blood Demands</h2>
+                                <p class="card-subtitle">Transfusion demands raised by this clinical facility</p>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <a th:href="@{/export/requests.csv}" class="btn btn-secondary btn-sm">
+                                    <i data-lucide="download"></i>
+                                    <span>Export CSV</span>
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="table-filter-bar" style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
+                            <div class="search-input-box">
+                                <i data-lucide="search"></i>
+                                <input type="text" id="hospReqSearch" onkeyup="filterTable('hospReqSearch', 'hospReqBody')" placeholder="Filter demands by patient or blood group...">
+                            </div>
+                            <div class="urgency-filter-bar" style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
+                                <span style="font-size: 0.78rem; font-weight: 700; color: var(--slate-muted); text-transform: uppercase; margin-right: 0.25rem;">Urgency:</span>
+                                <button type="button" class="btn btn-secondary btn-sm urgency-pill active" onclick="filterByUrgency(this, 'ALL', 'hospReqBody')" style="padding: 0.25rem 0.65rem; font-size: 0.78rem;">All</button>
+                                <button type="button" class="btn btn-secondary btn-sm urgency-pill" onclick="filterByUrgency(this, 'CRITICAL', 'hospReqBody')" style="padding: 0.25rem 0.65rem; font-size: 0.78rem;">Critical</button>
+                                <button type="button" class="btn btn-secondary btn-sm urgency-pill" onclick="filterByUrgency(this, 'HIGH', 'hospReqBody')" style="padding: 0.25rem 0.65rem; font-size: 0.78rem;">High</button>
+                                <button type="button" class="btn btn-secondary btn-sm urgency-pill" onclick="filterByUrgency(this, 'NORMAL', 'hospReqBody')" style="padding: 0.25rem 0.65rem; font-size: 0.78rem;">Medium</button>
+                                <button type="button" class="btn btn-secondary btn-sm urgency-pill" onclick="filterByUrgency(this, 'LOW', 'hospReqBody')" style="padding: 0.25rem 0.65rem; font-size: 0.78rem;">Low</button>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Req ID</th>
+                                        <th>Patient Name</th>
+                                        <th>Group</th>
+                                        <th>Units</th>
+                                        <th>On-Hand</th>
+                                        <th>Urgency</th>
+                                        <th>Status</th>
+                                        <th>Waiting Age</th>
+                                        <th>Matching Tool</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="hospReqBody">
+                                    <tr th:each="hr : ${requests}" th:attr="data-urgency=${hr.request.urgency.name()}">
+                                        <td style="font-weight: 700; color: var(--slate-muted);" th:text="'#' + ${hr.request.requestId}">#1</td>
+                                        <td style="font-weight: 700; color: var(--navy-dark);">
+                                            <a th:href="@{/request/{id}(id=${hr.request.requestId})}" style="color: var(--navy-dark);" th:text="${hr.request.patientName}">Priya Sundaram</a>
+                                        </td>
+                                        <td><span class="bg-badge" th:text="${hr.request.bloodGroup}">O-</span></td>
+                                        <td style="font-weight: 700;" th:text="${hr.request.unitsNeeded} + 'u'">2u</td>
+                                        <td style="font-weight: 700; color: var(--primary);" th:text="${hr.allocatableNow} + 'u'">1u</td>
+                                        <td>
+                                            <span th:if="${hr.request.urgency.name() == 'CRITICAL'}" class="badge badge-critical">CRITICAL</span>
+                                            <span th:if="${hr.request.urgency.name() == 'HIGH'}" class="badge badge-high">HIGH</span>
+                                            <span th:if="${hr.request.urgency.name() == 'NORMAL'}" class="badge badge-normal">NORMAL</span>
+                                        </td>
+                                        <td>
+                                            <span th:if="${hr.request.status.name() == 'PENDING'}" class="badge badge-pending">PENDING</span>
+                                            <span th:if="${hr.request.status.name() == 'MATCHED'}" class="badge badge-matched">MATCHED</span>
+                                            <span th:if="${hr.request.status.name() == 'FULFILLED'}" class="badge badge-fulfilled">FULFILLED</span>
+                                            <span th:if="${hr.request.status.name() == 'CANCELLED'}" class="badge badge-cancelled">CANCELLED</span>
+                                        </td>
+                                        <td><span th:text="${hr.daysWaiting} + ' d'">2 d</span></td>
+                                        <td>
+                                            <div th:if="${hr.request.status.name() == 'PENDING' or hr.request.status.name() == 'MATCHED'}" style="display: flex; gap: 0.35rem;">
+                                                <a th:href="@{/hospital/dashboard(matchReqId=${hr.request.requestId}, strategy='compatible')} + '#matching'" class="btn btn-outline-primary btn-sm">
+                                                    <i data-lucide="git-merge"></i>
+                                                    <span>Compatible</span>
+                                                </a>
+                                                <a th:href="@{/hospital/dashboard(matchReqId=${hr.request.requestId}, strategy='exact')} + '#matching'" class="btn btn-secondary btn-sm">
+                                                    <span>Exact</span>
+                                                </a>
+                                            </div>
+                                            <span th:unless="${hr.request.status.name() == 'PENDING' or hr.request.status.name() == 'MATCHED'}" style="color: var(--slate-muted); font-size: 0.8rem; font-style: italic;">
+                                                Closed
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <a th:href="@{/request/{id}(id=${hr.request.requestId})}" class="btn btn-secondary btn-sm">
+                                                <i data-lucide="eye"></i>
+                                                <span>Details</span>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${#lists.isEmpty(requests)}">
+                                        <td colspan="10" style="text-align: center; color: var(--slate-muted); padding: 2rem;">
+                                            No blood requests recorded for this facility yet.
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==============================================================
+                     PANEL 4: RESERVES & INVENTORY
+                     ============================================================== -->
+                <div class="dash-panel" id="panel-reserves">
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h2 class="card-title">Facility Blood Bank Reserves</h2>
+                                <p class="card-subtitle">On-hand blood units stored in <span th:text="${hospitalName}">Facility</span> blood bank</p>
+                            </div>
+                            <span class="badge badge-normal" th:text="${hospitalUnits} + ' Units Total'">0 Units</span>
+                        </div>
+
+                        <!-- 8 Group Cards Grid -->
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 1rem;">
+                            <div th:each="bg : ${orderedBloodGroups}" 
+                                 class="card" style="padding: 1.25rem 1rem; text-align: center; margin-bottom: 0;">
+                                <span class="bg-badge" style="font-size: 1rem; margin-bottom: 0.5rem;" th:text="${bg}">O+</span>
+                                
+                                <!-- Blood Bag Visual Meter -->
+                                <div style="margin: 0.75rem auto; width: 34px; height: 48px; border: 1.5px solid var(--border-color); border-radius: var(--radius-sm); background: #ffffff; position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end;">
+                                    <div th:style="'width: 100%; height: ' + (${stockMap.getOrDefault(bg, 0)} > 10 ? 100 : ${stockMap.getOrDefault(bg, 0)} * 10) + '%; background: ' + (${stockMap.getOrDefault(bg, 0)} < 3 ? 'var(--btn-red)' : 'var(--primary-red)') + '; transition: height 0.3s ease;'"></div>
+                                </div>
+
+                                <div style="font-size: 1.4rem; font-weight: 800; color: var(--navy-dark);" th:text="${stockMap.getOrDefault(bg, 0)} + 'u'">
+                                    4u
+                                </div>
+                                <div style="font-size: 0.72rem; font-weight: 700; margin-top: 0.25rem;">
+                                    <span th:if="${stockMap.getOrDefault(bg, 0) < 3}" class="badge badge-critical">Low Stock</span>
+                                    <span th:unless="${stockMap.getOrDefault(bg, 0) < 3}" class="badge badge-fulfilled">Adequate</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==============================================================
+                     PANEL 5: DONOR MATCHING ENGINE
+                     ============================================================== -->
+                <div class="dash-panel" id="panel-matching">
+                    <!-- Matching Target Selection Header -->
+                    <div class="card" th:if="${matchedRequest != null}">
+                        <div class="card-header">
+                            <div>
+                                <div style="font-size: 0.75rem; font-weight: 700; color: var(--primary); text-transform: uppercase;">Matching Engine Active</div>
+                                <h2 class="card-title" style="margin-top: 0.2rem;">
+                                    Compatible Donors for: <span th:text="${matchedRequest.patientName}">Patient</span>
+                                    (<span class="bg-badge" th:text="${matchedRequest.bloodGroup}">O+</span>, <span th:text="${matchedRequest.unitsNeeded}">2</span> units)
+                                </h2>
+                                <p class="card-subtitle">
+                                    Strategy: <strong style="text-transform: uppercase; color: var(--primary);" th:text="${matchStrategy}">COMPATIBLE</strong>
+                                    &bull; Filtered for age 18 to 65, city proximity (<span th:text="${hospitalCity}">Chennai</span>), availability, and 90-day recovery.
+                                </p>
+                            </div>
+
+                            <!-- Switch Strategy / Demand Buttons -->
+                            <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+                                <a th:href="@{/hospital/dashboard(matchReqId=${matchedRequest.requestId}, strategy='compatible')} + '#matching'" 
+                                   class="btn btn-sm" th:classappend="${matchStrategy == 'compatible'} ? 'btn-primary' : 'btn-secondary'">
+                                    <i data-lucide="git-merge"></i>
+                                    <span>Compatible Matches</span>
+                                </a>
+                                <a th:href="@{/hospital/dashboard(matchReqId=${matchedRequest.requestId}, strategy='exact')} + '#matching'" 
+                                   class="btn btn-sm" th:classappend="${matchStrategy == 'exact'} ? 'btn-primary' : 'btn-secondary'">
+                                    <span>Exact Group Only</span>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Matches Table -->
+                        <div th:if="${#lists.isEmpty(explainedMatches)}" class="alert alert-warning" style="margin-bottom: 0;">
+                            <i data-lucide="alert-octagon"></i>
+                            <span>No eligible voluntary donors matching this patient's requirements are currently available in <span th:text="${hospitalCity}">City</span>.</span>
+                        </div>
+
+                        <div th:unless="${#lists.isEmpty(explainedMatches)}" class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Donor ID</th>
+                                        <th>Donor Name</th>
+                                        <th>Group</th>
+                                        <th>Age</th>
+                                        <th>City</th>
+                                        <th>Contact Phone</th>
+                                        <th>Clinical Match Explanation</th>
+                                        <th>In-App Notification</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="m : ${explainedMatches}">
+                                        <td style="font-weight: 700; color: var(--slate-muted);" th:text="'#' + ${m.donor.donorId}">#1</td>
+                                        <td style="font-weight: 700; color: var(--navy-dark);" th:text="${m.donor.name}">Rahul Sharma</td>
+                                        <td><span class="bg-badge" th:text="${m.donor.bloodGroup}">O+</span></td>
+                                        <td th:text="${m.donor.age} + ' yrs'">29 yrs</td>
+                                        <td th:text="${m.donor.city}">Chennai</td>
+                                        <td>
+                                            <a th:href="'tel:' + ${m.donor.phone}" style="color: var(--primary); font-weight: 600;" th:text="${m.donor.phone}">9876543210</a>
+                                        </td>
+                                        <td style="font-size: 0.825rem; color: var(--slate-body); max-width: 280px;" th:text="${m.explanationReason}">
+                                            Compatible group in Chennai.
+                                        </td>
+                                        <td>
+                                            <form th:action="@{/hospital/request/notify}" method="post" style="display: inline;">
+                                                <input type="hidden" name="_csrf" th:value="${_csrf}">
+                                                <input type="hidden" name="requestId" th:value="${matchedRequest.requestId}">
+                                                <input type="hidden" name="donorId" th:value="${m.donor.donorId}">
+                                                <button type="submit" class="btn btn-primary btn-sm">
+                                                    <i data-lucide="bell"></i>
+                                                    <span>Notify Donor</span>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Empty state if no demand is active -->
+                    <div class="card" th:unless="${matchedRequest != null}">
+                        <div class="empty-state">
+                            <i data-lucide="git-merge"></i>
+                            <div class="empty-title">No Active Demand Selected</div>
+                            <p class="empty-desc">Select any open demand from the Blood Demands panel to run the intelligent matching engine against eligible voluntary donors.</p>
+                            <a href="#demands" class="btn btn-primary btn-sm" style="margin-top: 1rem;" onclick="switchPanel('panel-demands', document.querySelector('[data-target=\'panel-demands\']'))">
+                                <span>Go to Blood Demands</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==============================================================
+                     PANEL 6: FACILITY PROFILE
+                     ============================================================== -->
+                <div class="dash-panel" id="panel-profile">
+                    <div class="card" style="max-width: 680px; margin: 0 auto;">
+                        <div class="card-header">
+                            <div>
+                                <h2 class="card-title">Hospital Facility Profile</h2>
+                                <p class="card-subtitle">Verified registration credentials and contact information</p>
+                            </div>
+                            <span class="badge badge-fulfilled">Authorized</span>
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            <div style="background: var(--slate-light); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 1.25rem;">
+                                <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--slate-muted);">Clinical Facility Name</div>
+                                <div style="font-size: 1.25rem; font-weight: 800; color: var(--navy-dark); margin-top: 0.2rem;" th:text="${hospitalName}">Apollo Hospital</div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div style="background: var(--slate-light); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 1rem;">
+                                    <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--slate-muted);">City Location</div>
+                                    <div style="font-size: 1rem; font-weight: 700; color: var(--navy-dark);" th:text="${hospitalCity}">Chennai</div>
+                                </div>
+
+                                <div style="background: var(--slate-light); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 1rem;">
+                                    <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--slate-muted);">Facility ID</div>
+                                    <div style="font-size: 1rem; font-weight: 700; color: var(--navy-dark);" th:text="'#' + ${hospitalId}">#1</div>
+                                </div>
+                            </div>
+
+                            <div style="background: var(--slate-light); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 1rem;">
+                                <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--slate-muted);">Emergency Blood Bank Telephone</div>
+                                <div style="font-size: 1.05rem; font-weight: 700; color: var(--primary); margin-top: 0.2rem;" th:text="${hospitalPhone}">044-28290200</div>
+                            </div>
+
+                            <div style="background: var(--slate-light); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 1rem;">
+                                <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--slate-muted);">Authenticated Staff Account</div>
+                                <div style="font-size: 1rem; font-weight: 700; color: var(--navy-dark); margin-top: 0.2rem;" th:text="${username}">hospital_apollo</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==============================================================
+                     PANEL 7: ACCOUNT & SECURITY SETTINGS
+                     ============================================================== -->
+                <div th:replace="~{fragments/dashboard-layout :: settingsPanel(${username}, ${role}, ${roleDisplayName})}"></div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Scripts Fragment -->
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+
+</body>
+</html>

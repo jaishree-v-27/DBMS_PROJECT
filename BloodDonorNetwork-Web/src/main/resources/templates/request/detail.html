@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${pageTitle})}"></head>
+<body>
+
+    <!-- Authenticated Navigation Bar -->
+    <header th:replace="~{fragments/layout :: dashNavbar(${username}, ${role})}"></header>
+
+    <main class="section">
+        <!-- Breadcrumb Navigation -->
+        <nav aria-label="Breadcrumb" style="margin-bottom: 1.25rem;">
+            <ol style="display: flex; gap: 0.5rem; list-style: none; font-size: 0.85rem; color: var(--slate-muted); align-items: center;">
+                <li>
+                    <a th:if="${role == 'ADMIN'}" th:href="@{/admin/dashboard}" style="color: var(--slate-muted);">Admin Dashboard</a>
+                    <a th:if="${role == 'REQUESTER'}" th:href="@{/hospital/dashboard}" style="color: var(--slate-muted);">Hospital Dashboard</a>
+                </li>
+                <li>/</li>
+                <li><span>Blood Requests</span></li>
+                <li>/</li>
+                <li style="font-weight: 700; color: var(--navy-dark);" th:text="'Request #' + ${request.requestId}">Request #1</li>
+            </ol>
+        </nav>
+
+        <!-- Status Alerts -->
+        <div th:if="${successMessage}" class="alert alert-success">
+            <i data-lucide="check-circle" style="width: 18px; height: 18px; flex-shrink: 0;"></i>
+            <span th:text="${successMessage}">Operation successful.</span>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger">
+            <i data-lucide="alert-circle" style="width: 18px; height: 18px; flex-shrink: 0;"></i>
+            <span th:text="${errorMessage}">Operation failed.</span>
+        </div>
+
+        <!-- Request Header Banner -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.75rem; margin-bottom: 2rem; box-shadow: var(--shadow-sm); display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem;">
+                    <span style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--slate-muted);" th:text="'Request #' + ${request.requestId}">Request #1</span>
+                    <span th:if="${request.urgency.name() == 'CRITICAL'}" class="badge badge-critical">CRITICAL</span>
+                    <span th:if="${request.urgency.name() == 'HIGH'}" class="badge badge-high">HIGH</span>
+                    <span th:if="${request.urgency.name() == 'NORMAL'}" class="badge badge-normal">NORMAL</span>
+                    <span th:if="${request.status.name() == 'PENDING'}" class="badge badge-pending">PENDING</span>
+                    <span th:if="${request.status.name() == 'MATCHED'}" class="badge badge-matched">MATCHED</span>
+                    <span th:if="${request.status.name() == 'FULFILLED'}" class="badge badge-fulfilled">FULFILLED</span>
+                    <span th:if="${request.status.name() == 'CANCELLED'}" class="badge badge-cancelled">CANCELLED</span>
+                </div>
+                <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--navy-dark); letter-spacing: -0.02em;">
+                    Patient: <span th:text="${request.patientName}">Priya Sundaram</span>
+                </h1>
+                <p style="color: var(--slate-muted); font-size: 0.9rem; margin-top: 0.35rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <span>Hospital: <strong style="color: var(--navy-dark);" th:text="${hospital.name}">Apollo Hospital</strong> (<span th:text="${hospital.city}">Chennai</span>)</span>
+                    <span>&bull;</span>
+                    <span>Required: <strong th:text="${request.unitsNeeded}">2</strong> units of <span class="bg-badge" th:text="${request.bloodGroup}">O-</span></span>
+                    <span>&bull;</span>
+                    <span>Raised: <strong th:text="${request.requestDate}">2026-04-10</strong> (<span th:text="${daysWaiting}">2</span> days ago)</span>
+                </p>
+            </div>
+
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                <button type="button" onclick="window.print()" class="btn btn-secondary btn-sm" title="Print Request Assessment">
+                    <i data-lucide="printer" style="width: 14px; height: 14px;"></i>
+                    <span>Print Record</span>
+                </button>
+                <form th:if="${request.status.name() == 'PENDING' or request.status.name() == 'MATCHED'}"
+                      th:action="@{/request/{id}/cancel(id=${request.requestId})}" method="post"
+                      onsubmit="return confirm('Confirm cancellation of request #' + [[${request.requestId}]] + '?');">
+                    <input type="hidden" name="_csrf" th:value="${_csrf}">
+                    <input type="hidden" name="reason" value="Cancelled from request detail console.">
+                    <button type="submit" class="btn btn-secondary btn-sm" style="color: var(--danger); border-color: var(--danger);">
+                        <i data-lucide="x" style="width: 14px; height: 14px;"></i>
+                        <span>Cancel Request</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 2-Column: Left (Smart Allocation & Fulfilment) + Right (Audit Event History) -->
+        <div class="grid-2" style="margin-bottom: 2.5rem; align-items: start;">
+            <!-- Smart Allocation Proposal -->
+            <div class="card">
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.25rem;">
+                    <div class="card-icon" style="margin-bottom: 0;">
+                        <i data-lucide="git-merge"></i>
+                    </div>
+                    <div>
+                        <h2 style="font-size: 1.2rem; font-weight: 700; color: var(--navy-dark);">Smart Fulfilment Plan</h2>
+                        <p style="font-size: 0.8rem; color: var(--slate-muted);">Algorithmic allocation proposal from on-hand hospital stock</p>
+                    </div>
+                </div>
+
+                <div style="background: var(--slate-light); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 1.25rem;">
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; text-align: center;">
+                        <div>
+                            <div style="font-size: 1.25rem; font-weight: 800; color: var(--navy-dark);" th:text="${plan.exactAvailable} + 'u'">3u</div>
+                            <div style="font-size: 0.75rem; color: var(--slate-muted); text-transform: uppercase;">Exact Group On-Hand</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 1.25rem; font-weight: 800; color: var(--info);" th:text="${plan.compatibleAvailable} + 'u'">5u</div>
+                            <div style="font-size: 0.75rem; color: var(--slate-muted); text-transform: uppercase;">Total Compatible Stock</div>
+                        </div>
+                        <div>
+                            <div th:if="${plan.shortfall == 0}" style="font-size: 1.25rem; font-weight: 800; color: var(--success);">0u</div>
+                            <div th:unless="${plan.shortfall == 0}" style="font-size: 1.25rem; font-weight: 800; color: var(--danger);" th:text="${plan.shortfall} + 'u'">2u</div>
+                            <div style="font-size: 0.75rem; color: var(--slate-muted); text-transform: uppercase;">Current Shortfall</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 1.25rem;">
+                    <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--navy-dark); margin-bottom: 0.5rem;">
+                        Recommended Allocation Sequence:
+                    </h3>
+                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.875rem;">
+                        <li th:each="alloc : ${plan.plannedAllocations}" style="padding: 0.6rem 0.85rem; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-sm); display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <span class="bg-badge" th:text="${alloc.bloodGroup}">O+</span>
+                                <span style="margin-left: 0.5rem; color: var(--slate-body);" th:text="${alloc.clinicalReason}">Clinical reason</span>
+                            </div>
+                            <strong style="color: var(--primary);" th:text="${alloc.unitsProposed} + ' unit(s)'">1 unit</strong>
+                        </li>
+                        <li th:if="${#lists.isEmpty(plan.plannedAllocations)}" style="color: var(--danger); font-size: 0.85rem; padding: 0.5rem 0;">
+                            No compatible inventory currently available in this hospital to allocate.
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Transactional Issuance Action -->
+                <div th:if="${request.status.name() == 'PENDING' or request.status.name() == 'MATCHED'}">
+                    <form th:if="${plan.exactAvailable >= request.unitsNeeded}"
+                          th:action="@{/request/{id}/issue(id=${request.requestId})}" method="post"
+                          onsubmit="return confirm('Confirm ACID blood issuance for request #' + [[${request.requestId}]] + '? This will deduct inventory and mark the demand FULFILLED.');">
+                        <input type="hidden" name="_csrf" th:value="${_csrf}">
+                        <button type="submit" class="btn btn-primary btn-block">
+                            <i data-lucide="zap" style="width: 16px; height: 16px;"></i>
+                            <span>Issue Blood Units (ACID Transaction)</span>
+                        </button>
+                    </form>
+
+                    <div th:unless="${plan.exactAvailable >= request.unitsNeeded}" class="alert alert-danger" style="margin-bottom: 0;">
+                        <i data-lucide="alert-triangle" style="width: 18px; height: 18px; flex-shrink: 0;"></i>
+                        <span>Exact inventory insufficient to fulfill full demand directly. Please notify compatible voluntary donors below or coordinate transfer.</span>
+                    </div>
+                </div>
+
+                <div th:unless="${request.status.name() == 'PENDING' or request.status.name() == 'MATCHED'}" style="text-align: center; padding: 0.75rem; background: var(--slate-light); border-radius: var(--radius-sm); font-size: 0.85rem; color: var(--slate-muted);">
+                    This request has reached terminal state (<strong th:text="${request.status}">FULFILLED</strong>). No further stock operations can be applied.
+                </div>
+            </div>
+
+            <!-- Real Event Audit Log -->
+            <div class="card">
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.25rem;">
+                    <div class="card-icon" style="margin-bottom: 0;">
+                        <i data-lucide="history"></i>
+                    </div>
+                    <div>
+                        <h2 style="font-size: 1.2rem; font-weight: 700; color: var(--navy-dark);">Audit Event Timeline</h2>
+                        <p style="font-size: 0.8rem; color: var(--slate-muted);">Real immutable database events recorded for this demand</p>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="data-table" style="font-size: 0.85rem;">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Event Type</th>
+                                <th>Transition</th>
+                                <th>Actor</th>
+                                <th>Clinical Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="ev : ${events}">
+                                <td style="white-space: nowrap; color: var(--slate-muted);" th:text="${#temporals.format(ev.createdAt, 'yyyy-MM-dd HH:mm')}">2026-04-10 14:30</td>
+                                <td><strong style="color: var(--navy-dark);" th:text="${ev.eventType}">CREATED</strong></td>
+                                <td style="white-space: nowrap;">
+                                    <span th:if="${ev.fromStatus != null}" th:text="${ev.fromStatus} + ' > ' + ${ev.toStatus}">PENDING > MATCHED</span>
+                                    <span th:unless="${ev.fromStatus != null}" th:text="${ev.toStatus}">PENDING</span>
+                                </td>
+                                <td th:text="${ev.actorUsername != null ? ev.actorUsername : 'System'}">admin</td>
+                                <td th:text="${ev.note}" style="max-width: 250px;">Initial demand raised.</td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(events)}">
+                                <td colspan="5" style="text-align: center; color: var(--slate-muted); padding: 1.5rem;">
+                                    No audit events recorded yet for this request.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section: Matched Voluntary Donors in this City -->
+        <div style="margin-bottom: 2.5rem;">
+            <div style="margin-bottom: 1rem;">
+                <h2 style="font-size: 1.35rem; font-weight: 800; color: var(--navy-dark);">
+                    Eligible Voluntary Donors in <span th:text="${hospital.city}">Chennai</span>
+                </h2>
+                <p style="font-size: 0.875rem; color: var(--slate-muted);">
+                    Voluntary donors who match the patient's blood group compatibility rules, reside in the hospital's city, and are clinically eligible.
+                </p>
+            </div>
+
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Donor ID</th>
+                            <th>Donor Name</th>
+                            <th>Blood Group</th>
+                            <th>Age</th>
+                            <th>City</th>
+                            <th>Contact Phone</th>
+                            <th>Last Donated</th>
+                            <th>Eligibility Status</th>
+                            <th>In-App Notification</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="d : ${matchedDonors}">
+                            <td style="font-weight: 700; color: var(--slate-muted);" th:text="'#' + ${d.donorId}">#1</td>
+                            <td style="font-weight: 700; color: var(--navy-dark);" th:text="${d.name}">Rahul Sharma</td>
+                            <td><span class="bg-badge" th:text="${d.bloodGroup}">O+</span></td>
+                            <td th:text="${d.age} + ' yrs'">29 yrs</td>
+                            <td th:text="${d.city}">Chennai</td>
+                            <td>
+                                <a th:href="'tel:' + ${d.phone}" style="color: var(--primary); font-weight: 600;" th:text="${d.phone}">9876543210</a>
+                            </td>
+                            <td th:text="${d.lastDonationDate != null ? d.lastDonationDate : 'Never Donated'}">2026-01-15</td>
+                            <td>
+                                <span th:if="${d.isEligible(90)}" class="badge badge-eligible">Eligible</span>
+                                <span th:unless="${d.isEligible(90)}" class="badge badge-recovery">In Recovery</span>
+                            </td>
+                            <td>
+                                <form th:if="${(request.status.name() == 'PENDING' or request.status.name() == 'MATCHED') and d.isEligible(90)}"
+                                      th:action="@{/request/{id}/notify-donor(id=${request.requestId})}" method="post" style="display: inline;">
+                                    <input type="hidden" name="_csrf" th:value="${_csrf}">
+                                    <input type="hidden" name="donorId" th:value="${d.donorId}">
+                                    <button type="submit" class="btn btn-outline-primary btn-sm">
+                                        <i data-lucide="bell" style="width: 13px; height: 13px;"></i>
+                                        <span>Notify Donor</span>
+                                    </button>
+                                </form>
+                                <span th:unless="${(request.status.name() == 'PENDING' or request.status.name() == 'MATCHED') and d.isEligible(90)}"
+                                      style="color: var(--slate-muted); font-size: 0.8rem; font-style: italic;">
+                                    Ineligible
+                                </span>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(matchedDonors)}">
+                            <td colspan="9" style="text-align: center; color: var(--slate-muted); padding: 2rem;">
+                                No eligible voluntary donors currently found in this city matching this patient's blood compatibility.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Section: Notification Responses Breakdown -->
+        <div th:if="${responseSummary.totalSent > 0}" style="margin-bottom: 2rem;">
+            <h2 style="font-size: 1.35rem; font-weight: 800; color: var(--navy-dark); margin-bottom: 0.35rem;">
+                In-App Transfusion Notification Responses
+            </h2>
+            <p style="font-size: 0.875rem; color: var(--slate-muted); margin-bottom: 1rem;">
+                Live volunteer responses received via the in-app notification system.
+            </p>
+
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Donor Name</th>
+                            <th>Blood Group</th>
+                            <th>Contact Phone</th>
+                            <th>City</th>
+                            <th>Notification Status</th>
+                            <th>Dispatched At</th>
+                            <th>Responded At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="r : ${responseSummary.responses}">
+                            <td style="font-weight: 700; color: var(--navy-dark);" th:text="${r.donor_name}">Rahul Sharma</td>
+                            <td><span class="bg-badge" th:text="${r.blood_group}">O+</span></td>
+                            <td>
+                                <a th:href="'tel:' + ${r.phone}" style="color: var(--primary); font-weight: 600;" th:text="${r.phone}">9876543210</a>
+                            </td>
+                            <td th:text="${r.city}">Chennai</td>
+                            <td>
+                                <span th:if="${r.status == 'ACCEPTED'}" class="badge badge-fulfilled">ACCEPTED</span>
+                                <span th:if="${r.status == 'DECLINED'}" class="badge badge-critical">DECLINED</span>
+                                <span th:if="${r.status == 'SENT'}" class="badge badge-pending">PENDING RESPONSE</span>
+                                <span th:if="${r.status == 'EXPIRED'}" class="badge badge-cancelled">EXPIRED</span>
+                            </td>
+                            <td th:text="${r.created_at}">2026-04-10 10:00</td>
+                            <td th:text="${r.responded_at != null ? r.responded_at : 'Pending'}">Pending</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+
+    <!-- Scripts -->
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+
+</body>
+</html>

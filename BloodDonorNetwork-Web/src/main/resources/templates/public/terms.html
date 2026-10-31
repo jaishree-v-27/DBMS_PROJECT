@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${pageTitle})}"></head>
+<body>
+
+    <!-- Header Navigation -->
+    <header th:replace="~{fragments/layout :: navbar}"></header>
+
+    <main class="section">
+        <div style="max-width: 800px; margin: 0 auto; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 2.5rem; box-shadow: var(--shadow-sm);">
+            <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 1.25rem; margin-bottom: 1.5rem;">
+                <span class="section-tag">Terms of Service</span>
+                <h1 style="font-size: 2rem; font-weight: 800; color: var(--navy-dark); letter-spacing: -0.02em;">
+                    Terms and Conditions
+                </h1>
+                <p style="color: var(--slate-muted); font-size: 0.9rem; margin-top: 0.25rem;">
+                    Notice: This document governs access to the Blood Donor Network platform. It requires review by the responsible deployment authority.
+                </p>
+            </div>
+
+            <div style="font-size: 0.95rem; color: var(--slate-body); line-height: 1.7; display: flex; flex-direction: column; gap: 1.5rem;">
+                <section>
+                    <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--navy-dark); margin-bottom: 0.5rem;">
+                        1. System Purpose and Medical Disclaimer
+                    </h2>
+                    <p>
+                        The Blood Donor Network platform is an administrative record-keeping, inventory tracking, and donor-matching coordination software system. <strong>It does not provide medical clearance or clinical diagnoses.</strong> All actual blood draws, pre-donation hemoglobin screenings, serological screenings, and cross-matching tests must be performed in person by qualified medical personnel at licensed blood collection facilities.
+                    </p>
+                </section>
+
+                <section>
+                    <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--navy-dark); margin-bottom: 0.5rem;">
+                        2. Voluntary Participation
+                    </h2>
+                    <p>
+                        Blood donation through this network is strictly voluntary and unpaid. Donors may update their availability status at any time through their profile portal.
+                    </p>
+                </section>
+
+                <section>
+                    <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--navy-dark); margin-bottom: 0.5rem;">
+                        3. Accuracy of Clinical Information
+                    </h2>
+                    <p>
+                        Participating healthcare facilities agree to enter truthful patient blood requirements and accurate units needed. In-app notifications sent to voluntary donors represent genuine clinical requests.
+                    </p>
+                </section>
+
+                <section>
+                    <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--navy-dark); margin-bottom: 0.5rem;">
+                        4. Account Security and Authorization
+                    </h2>
+                    <p>
+                        Users are responsible for safeguarding login credentials. Account brute-force protection locks accounts for 10 minutes following 5 consecutive failed sign-in attempts.
+                    </p>
+                </section>
+            </div>
+
+            <div style="margin-top: 2.5rem; border-top: 1px solid var(--border-color); padding-top: 1.25rem; display: flex; justify-content: space-between; align-items: center;">
+                <a th:href="@{/}" class="btn btn-secondary btn-sm">
+                    <i data-lucide="arrow-left" style="width: 14px; height: 14px;"></i>
+                    <span>Back to Overview</span>
+                </a>
+                <span style="font-size: 0.8rem; color: var(--slate-muted);">Version 1.0.0 (October 2026)</span>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+
+    <!-- Scripts -->
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+
+</body>
+</html>

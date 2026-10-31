@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${pageTitle})}"></head>
+<body>
+
+    <!-- Top Navigation Bar -->
+    <header th:replace="~{fragments/layout :: navbar}"></header>
+
+    <main class="auth-wrapper">
+        <div class="auth-card auth-card-login">
+            <!-- Icon and Heading -->
+            <div class="auth-header">
+                <div class="auth-icon">
+                    <i data-lucide="shield" style="width: 24px; height: 24px;"></i>
+                </div>
+                <h1 class="auth-title">Clinical Portal Sign In</h1>
+                <p class="auth-subtitle">Blood Donor Network Authentication</p>
+            </div>
+
+            <!-- Error Banner -->
+            <div th:if="${errorMessage}" class="alert alert-danger">
+                <i data-lucide="alert-circle" style="width: 16px; height: 16px; flex-shrink: 0;"></i>
+                <span th:text="${errorMessage}">Authentication failed.</span>
+            </div>
+
+            <!-- Logout Success Banner -->
+            <div th:if="${logoutMessage}" class="alert alert-success">
+                <i data-lucide="check-circle" style="width: 16px; height: 16px; flex-shrink: 0;"></i>
+                <span th:text="${logoutMessage}">Signed out successfully.</span>
+            </div>
+
+            <!-- 1-Click Demo Quick Fill Buttons (Visible in demo mode) -->
+            <div th:if="${demoMode}" class="demo-role-box">
+                <div class="demo-role-label">
+                    <i data-lucide="zap" style="color: var(--red); width: 14px; height: 14px;"></i>
+                    <span>College Project Demo Roles</span>
+                </div>
+                <p class="demo-role-hint">
+                    Select a role to populate verified credentials:
+                </p>
+                <div class="demo-role-actions">
+                    <button type="button" class="demo-btn demo-role-btn" id="demoBtnAdmin" onclick="quickFill('admin', 'admin123', this)">
+                        <i data-lucide="shield" style="width: 13px; height: 13px;"></i>
+                        <span>Admin</span>
+                    </button>
+                    <button type="button" class="demo-btn demo-role-btn" id="demoBtnHospital" onclick="quickFill('apollo_chennai', 'hospital123', this)">
+                        <i data-lucide="building-2" style="width: 13px; height: 13px;"></i>
+                        <span>Hospital</span>
+                    </button>
+                    <button type="button" class="demo-btn demo-role-btn" id="demoBtnDonor" onclick="quickFill('rahul_sharma', 'donor123', this)">
+                        <i data-lucide="user-check" style="width: 13px; height: 13px;"></i>
+                        <span>Donor</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Login Form with CSRF Token -->
+            <form th:action="@{/login}" method="post" id="loginForm">
+                <input type="hidden" name="_csrf" th:value="${_csrf}">
+
+                <div class="form-group">
+                    <label class="form-label" for="username">Username</label>
+                    <input type="text" id="username" name="username" class="form-input" placeholder="e.g. admin, apollo_chennai, rahul_sharma" required autofocus>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="password">Password</label>
+                    <input type="password" id="password" name="password" class="form-input" placeholder="Enter password" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block" style="margin-top: 1.25rem; width: 100%; padding: 0.75rem;">
+                    <i data-lucide="log-in" style="width: 16px; height: 16px;"></i>
+                    <span>Authenticate and Access</span>
+                </button>
+            </form>
+
+            <!-- Voluntary Donor Registration Link -->
+            <div style="text-align: center; margin-top: 1.25rem; font-size: 0.88rem; color: var(--text-muted);">
+                <span>New voluntary donor? </span>
+                <a th:href="@{/register}" style="font-weight: 700; color: var(--red); text-decoration: underline;">Register Here</a>
+            </div>
+
+            <!-- Footer Link -->
+            <div style="text-align: center; margin-top: 0.75rem; font-size: 0.85rem;">
+                <a th:href="@{/}" style="display: inline-flex; align-items: center; gap: 0.35rem; color: var(--text-muted); text-decoration: none;">
+                    <i data-lucide="arrow-left" style="width: 14px; height: 14px;"></i>
+                    <span>Back to System Overview</span>
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+
+    <!-- Scripts -->
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+
+    <script>
+        function quickFill(user, pass, btn) {
+            const uInput = document.getElementById('username');
+            const pInput = document.getElementById('password');
+            if (uInput && pInput) {
+                uInput.value = user;
+                pInput.value = pass;
+                
+                // Active state on demo role button
+                document.querySelectorAll('.demo-role-btn').forEach(b => b.classList.remove('active'));
+                if (btn) btn.classList.add('active');
+
+                uInput.style.backgroundColor = 'var(--red-tint)';
+                pInput.style.backgroundColor = 'var(--red-tint)';
+                setTimeout(() => {
+                    uInput.style.backgroundColor = 'var(--white, #ffffff)';
+                    pInput.style.backgroundColor = 'var(--white, #ffffff)';
+                }, 400);
+            }
+        }
+    </script>
+</body>
+</html>
